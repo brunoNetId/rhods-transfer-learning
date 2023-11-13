@@ -1,0 +1,11 @@
+<Individual>
+    <Name>Some</Name>
+    <Surname>One</Surname>
+    <Address>
+        <Number>1</Number>
+        <Street>Some Street</Street>
+        <City>Somewhere</City>
+        <PostCode>SOME C0D3</PostCode>
+        <Country>UK</Country>
+    </Address>
+</Individual>
