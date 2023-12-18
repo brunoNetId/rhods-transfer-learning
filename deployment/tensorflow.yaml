@@ -29,7 +29,7 @@ spec:
         # - containerPort: 9000
         env:
         - name: MODEL_NAME
-          value: mymodel
+          value: tea_model_b64
         - name: MODEL_BASE_PATH
           value: s3://production/models
         - name: S3_ENDPOINT
