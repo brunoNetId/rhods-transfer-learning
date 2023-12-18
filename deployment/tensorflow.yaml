@@ -1,0 +1,84 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: tf-server
+  name: tf-server
+spec:
+  selector:
+    matchLabels:
+      app: tf-server
+  template:
+    metadata:
+      labels:
+        app: tf-server
+        version: v1
+    spec:
+      containers:
+      - image: tensorflow/serving:2.6.0
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          tcpSocket:
+            port: 8500
+        name: tf-server
+        ports:
+        - containerPort: 8500
+        # - containerPort: 9000
+        env:
+        - name: MODEL_NAME
+          value: mymodel
+        - name: MODEL_BASE_PATH
+          value: s3://production/models
+        - name: S3_ENDPOINT
+          value: http://minio-service:9000
+        - name: AWS_REGION
+          value: 'us-west-1'
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: minio-secret
+              key: minio_root_user
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: minio-secret
+              key: minio_root_password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: tf-server
+  name: tf-server
+spec:
+  ports:
+  - name: http-tf-serving
+    port: 8501
+    targetPort: 8501
+  # - name: grpc-tf-serving
+  #   port: 9000
+  #   targetPort: 9000   
+  selector:
+    app: tf-server
+  type: NodePort
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  labels:
+    app: tf-server
+  name: tf-server
+spec:
+  to:
+    kind: Service
+    name: tf-server
+    weight: 100
+  port:
+    targetPort: http-tf-serving
+  wildcardPolicy: None
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
