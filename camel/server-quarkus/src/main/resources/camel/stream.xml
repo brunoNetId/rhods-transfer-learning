@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- camel-k: language=xml -->
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://camel.apache.org/schema/spring"
+        xsi:schemaLocation="
+            http://camel.apache.org/schema/spring
+            https://camel.apache.org/schema/spring/camel-spring.xsd">
+
+
+	<!-- Write your routes here, for example: -->
+    <route id="zip">
+        <from uri="servlet:/zip?disableStreamCache=true"/>
+        <!-- <from uri="servlet:/zip"/> -->
+        <!-- <from uri="servlet:/test"/> -->
+
+        <log message="handling input stream"/>
+<!--         <to uri="file:../data?fileName=output"/>
+ -->
+
+        <removeHeaders pattern="*"/>
+        <!-- Unzip -->
+        <unmarshal>
+            <zipFile usingIterator="true"/>
+        </unmarshal>
+
+        <split streaming="true" parallelProcessing="false">
+            <simple>${body}</simple>
+            <!-- <to uri="log:debug?showAll=true"/> -->
+            <!-- <log message="${header.CamelFileName}: ${body}"/> -->
+            <to uri="direct:store-image"/>
+        </split>
+
+        <log message="done streaming"/>
+        <setBody>
+            <simple>done</simple>
+        </setBody>
+    </route>
+
+
+    <route id="store-image">
+        <from uri="direct:store-image"/>
+
+        <setHeader name="CamelAwsS3Key">
+            <simple>${header.CamelFileName}</simple>
+        </setHeader>
+
+        <setHeader name="CamelAwsS3ContentType">
+            <!-- <simple>application/pdf</simple> -->
+            <simple>image/jpeg</simple>
+        </setHeader>
+
+        <setBody>
+            <simple>${body.readAllBytes()}</simple>
+        </setBody>
+
+        <to uri="aws2-s3:data"/>
+        <!-- <to uri="file:testout"/> -->
+        <log message="file stored: ${header.CamelAwsS3Key}"/>
+    </route>
+
+</routes>
