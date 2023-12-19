@@ -27,6 +27,10 @@ Prepare the training data (ZIP file)
 Run a local instance
 ====================
 
+Make sure you configure your S3 URL.
+ 1) Update your 'application.properties'
+ 2) replace YOUR_MINIO_ROUTE by your Minio route in your OCP environment
+
 To run it locally with the command below:
 
 	./mvnw clean compile quarkus:dev
