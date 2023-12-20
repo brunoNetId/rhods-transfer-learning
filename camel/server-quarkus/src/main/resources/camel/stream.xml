@@ -37,25 +37,29 @@
         </setBody>
     </route>
 
-
     <route id="store-image">
         <from uri="direct:store-image"/>
+        <to uri="file:tempfiles?doneFileName=${file:name}.done"/>
+    </route>
+
+    <route id="file-reader">
+        <from uri="file:tempfiles?delete=true&amp;recursive=true&amp;doneFileName=${file:name}.done"/>
+        <log message="file is: ${header.CamelFileName}"/>
+        <to uri="direct:store-image-s3"/>
+    </route>
+
+    <route id="store-image-s3">
+        <from uri="direct:store-image-s3"/>
 
         <setHeader name="CamelAwsS3Key">
             <simple>${header.CamelFileName}</simple>
         </setHeader>
 
         <setHeader name="CamelAwsS3ContentType">
-            <!-- <simple>application/pdf</simple> -->
             <simple>image/jpeg</simple>
         </setHeader>
 
-        <setBody>
-            <simple>${body.readAllBytes()}</simple>
-        </setBody>
-
         <to uri="aws2-s3:data"/>
-        <!-- <to uri="file:testout"/> -->
         <log message="file stored: ${header.CamelAwsS3Key}"/>
     </route>
 
