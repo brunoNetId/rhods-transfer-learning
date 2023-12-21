@@ -1,0 +1,7 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: train-model
+spec:
+
+  [Copy paste here contents of 'pipelineSpec']

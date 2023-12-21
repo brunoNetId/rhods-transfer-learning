@@ -1,0 +1,12 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: train-model-listener
+spec:
+  serviceAccountName: pipeline
+  triggers:
+    - name: trigger-listener
+      bindings:
+      - ref: train-model-binding
+      template:
+        ref: train-model-template
