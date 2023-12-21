@@ -34,7 +34,7 @@
             "label": "load_data",
             "ui_data": {
               "label": "load_data",
-              "image": "/notebook/test01/testtl/static/elyra/notebook.svg",
+              "image": "/notebook/tf/wb1/static/elyra/notebook.svg",
               "x_pos": 157,
               "y_pos": 137,
               "description": "Run notebook file"
@@ -93,7 +93,7 @@
             "label": "create_model",
             "ui_data": {
               "label": "create_model",
-              "image": "/notebook/test01/testtl/static/elyra/notebook.svg",
+              "image": "/notebook/tf/wb1/static/elyra/notebook.svg",
               "x_pos": 386,
               "y_pos": 172,
               "description": "Run notebook file"
@@ -161,7 +161,7 @@
             "label": "push_model",
             "ui_data": {
               "label": "push_model",
-              "image": "/notebook/test01/testtl/static/elyra/notebook.svg",
+              "image": "/notebook/tf/wb1/static/elyra/notebook.svg",
               "x_pos": 618,
               "y_pos": 210,
               "description": "Run notebook file"
@@ -253,8 +253,8 @@
           ],
           "pipeline_defaults": {
             "kubernetes_shared_mem_size": {},
-            "kubernetes_pod_annotations": [],
             "kubernetes_pod_labels": [],
+            "kubernetes_pod_annotations": [],
             "mounted_volumes": [
               {
                 "path": "/data",
