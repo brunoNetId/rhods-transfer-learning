@@ -2,6 +2,7 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerTemplate
 metadata:
   name: train-model-template
+  namespace: tf
 spec:
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
