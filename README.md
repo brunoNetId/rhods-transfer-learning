@@ -84,8 +84,7 @@ Enter for example the credentials `user1/openshift`.
 
 1. Upload the pipeline sources to the project tree.
 
-> [!CAUTION] 
-
+   > [!CAUTION] 
    > Do not use the *'Git Clone'* feature to upload the project, you don't need to upload the big dataset of images!
 
    Under the *Jupyter* menu, click the icon *'Upload Files'* and select all the files under the repository path:
