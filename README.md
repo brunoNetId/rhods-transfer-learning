@@ -25,15 +25,17 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
       * **production**
       * **workbench**
 
-1. Create a new *Data Science Project*. \
-Open *Red Hat OpenShift AI* (also known as RHODS). \
-Enter for example the credentials `user1/openshift`. \
-Select *Data Science Projects* and click `Create data science project`. \
-As a name, use for example `tf` (TensorFlow)
+1. Create a new *Data Science Project*.
 
-1. Create a new *Data Connection*. \
-Under the new `tf` project > Data connections, click `Add data connection`. \
-Enter the following parameters:
+   Open *Red Hat OpenShift AI* (also known as RHODS). \
+   Enter for example the credentials `user1/openshift`. \
+   Select *Data Science Projects* and click `Create data science project`. \
+   As a name, use for example `tf` (TensorFlow)
+
+1. Create a new *Data Connection*.
+
+   Under the new `tf` project > Data connections, click `Add data connection`. \
+   Enter the following parameters:
    * Name: `dc1` (data connection 1)
    * Access key: `minio` 
    * Secret key: `minio123` 
@@ -42,21 +44,24 @@ Enter the following parameters:
    * Region: `eu-west-2`
    * Bucket: `workbench`
 
-1. Create a *Pipeline Server*. \
-Under the new `tf` project > Pipelines, click `Create a pipeline server`. \
-Enter the following parameters:
+1. Create a *Pipeline Server*.
+
+   Under the new `tf` project > Pipelines, click `Create a pipeline server`. \
+   Enter the following parameters:
    * Existing data connection: `dc1`
 
    Then click `Configure` to proceed.
 
-1. Create a '*PersistentVolumeClaim*' for the pipeline. \
-The PVC will enable shared storage for the pipeline's execution. \
-Deploy the following YAML resource:
+1. Create a '*PersistentVolumeClaim*' for the pipeline.
+
+   The PVC will enable shared storage for the pipeline's execution. \
+   Deploy the following YAML resource:
       * **deployment/pipeline/pvc.yaml**
 
-1. Create a new *Workbench*. \
-Under the new `tf` project > Workbenches, click `Create workbench`. \
-Enter the following parameters:
+1. Create a new *Workbench*.
+
+   Under the new `tf` project > Workbenches, click `Create workbench`. \
+   Enter the following parameters:
    * Name: `wb1` (workbench 1)
    * Image selection: `TensorFlow` 
    * Container Size: `medium` 
@@ -69,8 +74,9 @@ Enter the following parameters:
 
    Then click `Create workbench`
 
-1. Open the workbench (*Jupyter*). \
-When your workbench is in *Running* status, click `Open`. \
+1. Open the workbench (*Jupyter*).
+
+   When your workbench is in *Running* status, click `Open`. \
 Enter for example the credentials `user1/openshift`.
 
 1. Upload the pipeline sources to the project tree.
@@ -98,8 +104,9 @@ Enter for example the credentials `user1/openshift`.
 
    b. It will also populate your S3 bucket `workbench` with your pipeline's artifacts.
 
-1. Import the pipeline as an *OpenShift Tekton* pipeline. \
-From your OpenShift UI Console, navigate to Pipelines > Pipelines.
+1. Import the pipeline as an *OpenShift Tekton* pipeline.
+
+   From your OpenShift UI Console, navigate to Pipelines > Pipelines.
 
    > [!TIP] 
    > Reference to documented guidelines:
@@ -126,3 +133,42 @@ From your OpenShift UI Console, navigate to Pipelines > Pipelines.
    You can test the pipeline by clicking `Action > Start`, accept default values and click `Start`.
 
    You should see the pipeline fail because there is no trainable data available just yet.
+
+1. Upload training data to S3.
+
+   There are two options to upload training data:
+   * **Manually**: Use Minio's UI console to upload the `images` dataset under:
+     * dataset/images
+   * **Automatically**: Use the Camel server provided in the repository to push training data to S3. Follow the instructions under:
+     * camel/server-quarkus/Readme.txt
+
+1. Train the model.
+
+   You can re-run the pipeline by clicking `Action > Start`, accept default values and click `Start`.
+
+   You should now see the pipeline succeed. It will push the new model in the `production` bucket.
+
+1. Deploy the TensorFlow server.
+
+   Under the `ai-demo` project, deploy the following YAML resource:
+      * **deployment/tensorflow.yaml** 
+
+   The server will pick up the newly trained model from the S3 bucket.
+
+1. Run an inference request.
+
+   To test the Model server works, follow the instructions below.
+   1. From a terminal window change directory to client folder:
+      ```bash
+      cd client
+      ```
+   1. Edit the `infer.sh` script and configure the `server` url with your TensorFlow server's route.
+
+   1. Run the script:
+      ```
+      ./infer.sh
+      ```
+      The output should show something similar to:
+      ```
+      "predictions": ["tea-lemon", "0.866093"]
+      ```
