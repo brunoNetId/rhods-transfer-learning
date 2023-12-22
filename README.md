@@ -2,6 +2,9 @@
 
 This project contains resources to showcase a full circle continuous motion of data to capture training data, train new ML models, deploy them, serve them, and expose the service for clients to send inference requests.
 
+   > [!CAUTION] 
+   > This project is still under construction. The instructions below are temporary and will change as the project evolves.
+
 ## Deployment instructions
 
 The following list summarises the steps to deploy the demo:
@@ -172,3 +175,40 @@ Enter for example the credentials `user1/openshift`.
       ```
       "predictions": ["tea-lemon", "0.866093"]
       ```
+
+1. Create a Pipeline trigger.
+
+   The pipeline will eventually become automatically triggered when new data to retrain the model becomes available. Follow the steps below to create the trigger.
+
+   To provision the YAML resources below, make sure you switch to the `tf` project where your pipeline was created.
+
+   1. Deploy the following YAML resource:
+      * **deployment/pipeline/trigger-pipeline.yaml**
+
+   1. Deploy the following YAML resource:
+      * **deployment/pipeline/trigger-binding.yaml**
+
+   1. Deploy the following YAML resource:
+      * **deployment/pipeline/event-listener.yaml**
+
+2. Trigger the pipeline
+
+   To test the pipeline trigger, from OpenShifts's UI console, open a terminal by clicking the icon `>_` in the upper-right corner of the screen.
+
+   Copy/Paste and execute the following `curl` command:
+
+    ```bash
+    curl -v \
+    -H 'content-Type: application/json' \
+    -d '{}' \
+    http://el-train-model-listener.tf.svc:8080
+    ```
+   The output of the command above should show the status response:
+    ```
+    HTTP/1.1 202 Accepted
+    ```
+   Switch to the Pipelines view to inspect if a new pipeline is in execution.
+
+   a. When the pipeline succeeds, a new model version will show up in the `production` S3 bucket.
+   
+   b. When a new model version is pushed, the Model server will detect the new version and hot reload it. 
