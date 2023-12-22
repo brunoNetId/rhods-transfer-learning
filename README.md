@@ -26,22 +26,26 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
       * **workbench**
 
 1. Create a new *Data Science Project*. \
-From RHODS create a new project, for example `tf` (TensorFlow)
+Open *Red Hat OpenShift AI* (also known as RHODS). \
+Enter for example the credentials `user1/openshift`. \
+Select *Data Science Projects* and click `Create data science project`. \
+As a name, use for example `tf` (TensorFlow)
 
 1. Create a new *Data Connection*. \
 Under the new `tf` project > Data connections, click `Add data connection`. \
-Enter the following paramters:
+Enter the following parameters:
    * Name: `dc1` (data connection 1)
    * Access key: `minio` 
    * Secret key: `minio123` 
    * Endpoint: _YOUR MINIO API ROUTE_ 
+   * Endpoint: `http://minio-service.ai-demo.svc:9000` 
    * Region: `eu-west-2`
    * Bucket: `workbench`
 
 1. Create a *Pipeline Server*. \
 Under the new `tf` project > Pipelines, click `Create a pipeline server`. \
-Enter the following paramters:
-   * Existing data connection: `dc1` \
+Enter the following parameters:
+   * Existing data connection: `dc1`
 
    Then click `Configure` to proceed.
 
@@ -52,7 +56,7 @@ Deploy the following YAML resource:
 
 1. Create a new *Workbench*. \
 Under the new `tf` project > Workbenches, click `Create workbench`. \
-Enter the following paramters:
+Enter the following parameters:
    * Name: `wb1` (workbench 1)
    * Image selection: `TensorFlow` 
    * Container Size: `medium` 
@@ -67,10 +71,10 @@ Enter the following paramters:
 
 1. Open the workbench (*Jupyter*). \
 When your workbench is in *Running* status, click `Open`. \
-Enter for example the creadentials `user1/openshift`.
+Enter for example the credentials `user1/openshift`.
 
-1. Upload the pipeline sources to the project tree. \
-   > [!WARNING] 
+1. Upload the pipeline sources to the project tree.
+   > [!CAUTION] 
    > Do not use the *'Git Clone'* feature to upload the project, you don't need to upload the big dataset of images!
 
    Under the *Jupyter* menu, click the icon *'Upload Files'* and select all the files under the repository path:
@@ -86,6 +90,7 @@ Enter for example the creadentials `user1/openshift`.
    1. Hover and click on the icon with label `Export Pipeline`.
    1. Enter the following paramters:
       * s3endpoint: *YOUR MINIO API ROUTE*
+      * s3endpoint: `http://minio-service.ai-demo.svc:9000` 
       * leave all other parameters with default values.
    1. Click `OK`.
 
@@ -94,10 +99,30 @@ Enter for example the creadentials `user1/openshift`.
    b. It will also populate your S3 bucket `workbench` with your pipeline's artifacts.
 
 1. Import the pipeline as an *OpenShift Tekton* pipeline. \
-From your OpenShift UI Console, navigate to Pipelines > Pipelines. \
+From your OpenShift UI Console, navigate to Pipelines > Pipelines.
 
    > [!TIP] 
    > Reference to documented guidelines:
    > * https://docs.google.com/document/d/1kcubQQuQyJGP_grbMD6Jji8o-IBDrYBbuIOREj2dFlc/edit#heading=h.pehkoctq6uk2
 
-Click `Create > Pipeline`.
+   Click `Create > Pipeline`. \
+   Use the following snippet:
+   ```yaml
+   apiVersion: tekton.dev/v1beta1
+   kind: Pipeline
+   metadata:
+     name: train-model
+     namespace: tf
+   spec:
+   
+     [Copy paste here contents of 'pipelineSpec']
+   ```
+   Complete the YAML code above with the `pipelineSpec` definition from your exported YAML file in Jupyter.
+      > [!CAUTION] 
+      > Make sure your un-tab one level the `pipelineSpec` definition to make the resource valid.
+
+   Click `Create`.
+
+   You can test the pipeline by clicking `Action > Start`, accept default values and click `Start`.
+
+   You should see the pipeline fail because there is no trainable data available just yet.
