@@ -70,7 +70,7 @@ When your workbench is in *Running* status, click `Open`. \
 Enter for example the creadentials `user1/openshift`.
 
 1. Upload the pipeline sources to the project tree. \
-   > [!WARNING]
+   > [!WARNING] 
    > Do not use the *'Git Clone'* feature to upload the project, you don't need to upload the big dataset of images!
 
    Under the *Jupyter* menu, click the icon *'Upload Files'* and select all the files under the repository path:
@@ -78,7 +78,8 @@ Enter for example the creadentials `user1/openshift`.
 
 1. Export the pipeline in a *Tekton* YAML file.
    
-   > :Tip: Reference to documented guidelines:
+   > [!TIP] 
+   > Reference to documented guidelines:
    > * https://docs.google.com/document/d/1kcubQQuQyJGP_grbMD6Jji8o-IBDrYBbuIOREj2dFlc/edit#heading=h.wd1fnfz39nr
 
    1. Double click on the `retrain.pipeline` resource. The pipeline will be displayed in *Elyra* (embedded visual pipeline editor in Jupyter).
@@ -95,7 +96,8 @@ Enter for example the creadentials `user1/openshift`.
 1. Import the pipeline as an *OpenShift Tekton* pipeline. \
 From your OpenShift UI Console, navigate to Pipelines > Pipelines. \
 
-   > :Tip: Reference to documented guidelines:
+   > [!TIP] 
+   > Reference to documented guidelines:
    > * https://docs.google.com/document/d/1kcubQQuQyJGP_grbMD6Jji8o-IBDrYBbuIOREj2dFlc/edit#heading=h.pehkoctq6uk2
 
 Click `Create > Pipeline`.
