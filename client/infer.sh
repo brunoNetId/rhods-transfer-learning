@@ -1,12 +1,13 @@
 # set -x
 
-# image=./lemon.jpg
+server=https://tf-server-ai-demo.apps.cluster-sfzlt.sandbox2256.opentlc.com
+
+image=./lemon.jpg
 # image=./earl-grey.jpg
 # image=./earl-grey2.jpeg
 # image=./earl-grey4.jpeg
 # image=./kid.jpg
-image=./apple.jpg
-server=https://tf-server-ai-demo.apps.cluster-2lngl.sandbox1314.opentlc.com
+# image=./apple.jpg
 
 curl -X POST \
 -v \
