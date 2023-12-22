@@ -9,8 +9,8 @@
 
 
 	<!-- Write your routes here, for example: -->
-    <route id="zip">
-        <from uri="servlet:/zip?disableStreamCache=true"/>
+    <route id="DEPRECATED">
+        <from uri="servlet:/DEPRECATED?disableStreamCache=true"/>
         <!-- <from uri="servlet:/zip"/> -->
         <!-- <from uri="servlet:/test"/> -->
 
@@ -37,15 +37,49 @@
         </setBody>
     </route>
 
+
+    <route id="newzip">
+        <from uri="servlet:/zip?disableStreamCache=true"/>
+        <to uri="file:ziptemp?fileName=images.zip"/>
+        <log message="images.zip created"/>
+        <to uri="exec:mv?args=ziptemp/images.zip zip/images.zip"/>
+        <!-- <log message="renamed to images.zip.done"/> -->
+        <setBody>
+            <simple>done</simple>
+        </setBody>
+    </route>
+
+
+    <route id="unzip">
+        <!-- <from uri="file:zip?delete=true&amp;doneFileName=${file:name}.done"/> -->
+        <from uri="file:zip?delete=true"/>
+        <log message="unzipping..."/>
+        <to uri="exec:unzip?args=-d tempfiles zip/images.zip"/>
+        <log message="unzip completed."/>
+    </route>
+
     <route id="store-image">
         <from uri="direct:store-image"/>
         <to uri="file:tempfiles?doneFileName=${file:name}.done"/>
     </route>
 
     <route id="file-reader">
-        <from uri="file:tempfiles?delete=true&amp;recursive=true&amp;doneFileName=${file:name}.done"/>
-        <log message="file is: ${header.CamelFileName}"/>
-        <to uri="direct:store-image-s3"/>
+        <!-- <from uri="file:tempfiles?delete=true&amp;recursive=true&amp;doneFileName=${file:name}.done"/> -->
+        <from uri="file:tempfiles?delete=true&amp;recursive=true"/>
+        <!-- <log message="file is: ${header.CamelFileName}"/> -->
+
+        <choice>
+            <when>
+                <simple>${header.CamelFileName} regex "images/.*/.*\.(jpg|jpeg|JPG|JPEG)"</simple>
+
+                <!-- <log message="valid: ${header.CamelFileName}"/> -->
+                <to uri="direct:store-image-s3"/>
+
+            </when>
+            <otherwise>
+                <log message="(only /images/class-x/*.jpg) IGNORED: ${header.CamelFileName}"/>
+            </otherwise>
+        </choice>
     </route>
 
     <route id="store-image-s3">
@@ -60,7 +94,7 @@
         </setHeader>
 
         <to uri="aws2-s3:data"/>
-        <log message="file stored: ${header.CamelAwsS3Key}"/>
+        <!-- <log message="file stored: ${header.CamelAwsS3Key}"/> -->
     </route>
 
 </routes>
