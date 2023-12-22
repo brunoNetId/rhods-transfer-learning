@@ -42,7 +42,6 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
    * Name: `dc1` (data connection 1)
    * Access key: `minio` 
    * Secret key: `minio123` 
-   * Endpoint: _YOUR MINIO API ROUTE_ 
    * Endpoint: `http://minio-service.ai-demo.svc:9000` 
    * Region: `eu-west-2`
    * Bucket: `workbench`
@@ -99,7 +98,6 @@ Enter for example the credentials `user1/openshift`.
    1. Double click on the `retrain.pipeline` resource. The pipeline will be displayed in *Elyra* (embedded visual pipeline editor in Jupyter).
    1. Hover and click on the icon with label `Export Pipeline`.
    1. Enter the following paramters:
-      * s3endpoint: *YOUR MINIO API ROUTE*
       * s3endpoint: `http://minio-service.ai-demo.svc:9000` 
       * leave all other parameters with default values.
    1. Click `OK`.
@@ -213,5 +211,3 @@ Enter for example the credentials `user1/openshift`.
    a. When the pipeline succeeds, a new model version will show up in the `production` S3 bucket.
    
    b. When a new model version is pushed, the Model server will detect the new version and hot reload it.
-
-!!! note "an example note"
