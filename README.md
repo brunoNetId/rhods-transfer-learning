@@ -83,7 +83,9 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
 Enter for example the credentials `user1/openshift`.
 
 1. Upload the pipeline sources to the project tree.
-   > [!CAUTION] 
+
+> [!CAUTION] 
+
    > Do not use the *'Git Clone'* feature to upload the project, you don't need to upload the big dataset of images!
 
    Under the *Jupyter* menu, click the icon *'Upload Files'* and select all the files under the repository path:
@@ -211,4 +213,6 @@ Enter for example the credentials `user1/openshift`.
 
    a. When the pipeline succeeds, a new model version will show up in the `production` S3 bucket.
    
-   b. When a new model version is pushed, the Model server will detect the new version and hot reload it. 
+   b. When a new model version is pushed, the Model server will detect the new version and hot reload it.
+
+!!! note "an example note"
