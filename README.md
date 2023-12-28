@@ -139,7 +139,7 @@ Enter for example the credentials `user1/openshift`.
 1. Upload training data to S3.
 
    There are two options to upload training data:
-   * **Manually**: Use Minio's UI console to upload the `images` dataset under:
+   * **Manually (recommended)**: Use Minio's UI console to upload the `images` dataset under:
      * dataset/images
    * **Automatically**: Use the Camel server provided in the repository to push training data to S3. Follow the instructions under:
      * camel/server-quarkus/Readme.txt
