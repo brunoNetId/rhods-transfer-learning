@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- camel-k: language=xml -->
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://camel.apache.org/schema/spring"
+        xsi:schemaLocation="
+            http://camel.apache.org/schema/spring
+            https://camel.apache.org/schema/spring/camel-spring.xsd">
+
+
+    <route id="whoami">
+        <from uri="timer:whoami?repeatCount=1"/>
+        <log message="I am {{edge.id}}"/>
+    </route>
+
+
+    <route id="s3-reader">
+        <from uri="aws2-s3:{{edge.id}}-ready"/>
+
+        <log message="file is: ${header.CamelAwsS3Key}"/>
+
+        <setProperty name="name">
+            <simple>${header.CamelAwsS3Key}</simple>
+        </setProperty>
+
+        <removeHeaders pattern="*"/>
+        <to uri="direct:store-s3"/>
+    </route>
+
+
+
+    <route id="s3-writer">
+        <from uri="direct:store-s3"/>
+
+        <setHeader name="CamelAwsS3Key">
+            <simple>${exchangeProperty.name}</simple>
+        </setHeader>
+
+        <setHeader name="CamelAwsS3ContentType">
+            <simple>application/octet-stream</simple>
+        </setHeader>
+
+        <log message="uploading: ${header.CamelAwsS3Key}"/>
+
+        <to uri="aws2-s3:production?{{camel.uri.s3.parameters}}"/>
+    </route>
+
+
+</routes>
