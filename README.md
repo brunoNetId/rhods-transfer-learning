@@ -211,3 +211,7 @@ Enter for example the credentials `user1/openshift`.
    a. When the pipeline succeeds, a new model version will show up in the `production` S3 bucket.
    
    b. When a new model version is pushed, the Model server will detect the new version and hot reload it.
+
+1. MORE ITEMS
+
+   Pending
