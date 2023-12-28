@@ -5,5 +5,5 @@ metadata:
   namespace: tf
 spec:
   params:
-    - name: dummy
-      value: dummy
+    - name: id-edge
+      value: $(body.id-edge)

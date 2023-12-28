@@ -4,6 +4,9 @@ metadata:
   name: train-model-template
   namespace: tf
 spec:
+  params:
+  - name: id-edge
+    description: Identifier of target edge enviroment.
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -12,3 +15,8 @@ spec:
       spec:
         pipelineRef:
           name: train-model
+        params:
+        - name: s3bucket_data
+          value: $(tt.params.id-edge)-data
+        - name: s3bucket_models
+          value: $(tt.params.id-edge)
