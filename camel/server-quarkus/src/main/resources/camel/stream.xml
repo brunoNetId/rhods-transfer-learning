@@ -40,8 +40,28 @@
 
     <route id="newzip">
         <from uri="servlet:/zip?disableStreamCache=true"/>
+
+
+
         <to uri="file:ziptemp?fileName=images.zip"/>
         <log message="images.zip created"/>
+
+
+        <to uri="direct:check-pending-work"/>
+
+        <when>
+            <simple>${exchangeProperty.busy} == true</simple>
+            <log message="busy: ignoring ZIP request"/>
+            <to uri="exec:rm?args=ziptemp/images.zip"/>
+            <setHeader name="CamelHttpResponseCode">
+                <constant>425</constant>
+            </setHeader>
+            <setBody>
+                <constant>{"status":"busy"}</constant>
+            </setBody>
+            <stop/>
+        </when>
+
         <to uri="exec:mv?args=ziptemp/images.zip zip/images.zip"/>
         <!-- <log message="renamed to images.zip.done"/> -->
         <setBody>
@@ -56,7 +76,9 @@
         <log message="unzipping..."/>
         <to uri="exec:unzip?args=-d tempfiles zip/images.zip"/>
         <log message="unzip completed."/>
+
     </route>
+
 
     <route id="store-image">
         <from uri="direct:store-image"/>
@@ -80,6 +102,13 @@
                 <log message="(only /images/class-x/*.jpg) IGNORED: ${header.CamelFileName}"/>
             </otherwise>
         </choice>
+
+        <!-- RESET BODY and CHECK ASYNC (wireTap) -->
+        <setBody>
+            <constant>trigger</constant>
+        </setBody>
+        <wireTap uri="direct:check-pending-work"/>
+
     </route>
 
     <route id="store-image-s3">
@@ -95,6 +124,52 @@
 
         <to uri="aws2-s3:data"/>
         <!-- <log message="file stored: ${header.CamelAwsS3Key}"/> -->
+    </route>
+
+
+    <route id="check-pending-work">
+        <from uri="direct:check-pending-work"/>
+
+        <setProperty name="messagein">
+            <simple>${body}</simple>
+        </setProperty>
+
+        <setProperty name="busy">
+            <constant>true</constant>
+        </setProperty>
+
+        <to uri="exec:find?args= tempfiles -type f"/>
+
+        <setBody>
+            <simple resultType="String">${body}</simple>
+        </setBody>
+        <setBody>
+            <simple>${body.trim()}</simple>
+        </setBody>
+
+        <choice>
+            <when>
+                <simple>${body} == ""</simple>
+                <setProperty name="busy">
+                    <constant>false</constant>
+                </setProperty>
+                <log message="NO PENDING WORK !!"/>
+                <when>
+                    <simple>${exchangeProperty.messagein} == 'trigger'</simple>
+                    <log message="Triggering pipeline..."/>
+                    <to uri="direct:trigger-pipeline"/>
+                </when>
+            </when>
+        </choice>
+    </route>
+
+    <route id="trigger-pipeline">
+        <from uri="direct:trigger-pipeline"/>
+        <setBody>
+            <simple>dummy</simple>
+        </setBody>
+        <log message="sending event: ${body}"/>
+        <to uri="kafka:trigger"/>
     </route>
 
 </routes>

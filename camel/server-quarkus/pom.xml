@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.demo</groupId>
-    <artifactId>demo</artifactId>
+    <artifactId>feeder</artifactId>
     <version>1.0.0</version>
 
 <!--     <properties>
@@ -130,6 +130,10 @@
     <dependency>
       <groupId>org.apache.camel.quarkus</groupId>
       <artifactId>camel-quarkus-base64</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel.quarkus</groupId>
+      <artifactId>camel-quarkus-kafka</artifactId>
     </dependency>
 <!-- dependency=mvn:org.apache.camel:camel-file:3.21.1
 dependency=mvn:org.apache.camel:camel-direct:3.21.1
