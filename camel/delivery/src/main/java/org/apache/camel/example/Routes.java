@@ -17,12 +17,6 @@
 package org.apache.camel.example;
 
 import org.apache.camel.builder.RouteBuilder;
-// import org.apache.camel.BindToRegistry;
-// import org.apache.camel.Exchange;
-// import org.apache.camel.Processor;
-
-// import org.apache.camel.BindToRegistry;
-// import org.apache.camel.component.cxf.jaxws.*;
 
 public class Routes extends RouteBuilder {
 
@@ -31,18 +25,4 @@ public class Routes extends RouteBuilder {
         // Routes are loaded from XML files
         // It alligns a definition standard with Fuse and Camel K
     }
-
-/*
-    @BindToRegistry("monitorUpload")
-    public static Processor monitorUpload(){
-
-        return new Processor() {
-            public void process(Exchange exchange) throws Exception {
-
-            	System.out.println(">>>>>>>>>>>> Processor executing");
-            	// exchange.getIn().setHeaders(headers);
-            }
-        };
-    }
-*/
 }

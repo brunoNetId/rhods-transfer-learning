@@ -8,43 +8,6 @@
             https://camel.apache.org/schema/spring/camel-spring.xsd">
 
 
-
-
-
-    <route id="file-reader">
-        <!-- <from uri="file:tempfiles?delete=true&amp;recursive=true&amp;doneFileName=${file:name}.done"/> -->
-        <from uri="aws2-s3:edge1-models"/>
-
-        <!-- <from uri="file:tempfiles?delete=true&amp;recursive=true"/> -->
-        <log message="file is: ${header.CamelAwsS3Key}"/>
-
-        <setProperty name="name">
-            <simple>${header.CamelAwsS3Key}</simple>
-        </setProperty>
-
-        <removeHeaders pattern="*"/>
-        <to uri="direct:store-s3"/>
-    </route>
-
-
-    <route id="store-s3">
-        <from uri="direct:store-s3"/>
-
-        <setHeader name="CamelAwsS3Key">
-            <simple>${exchangeProperty.name}</simple>
-        </setHeader>
-
-        <setHeader name="CamelAwsS3ContentType">
-            <simple>application/octet-stream</simple>
-        </setHeader>
-
-        <log message="uploading to edge1-ready: ${header.CamelAwsS3Key}"/>
-
-        <!-- <to uri="aws2-s3:data"/> -->
-        <to uri="aws2-s3:edge1-ready"/>
-    </route>
-
-
     <route id="pipeline-trigger">
       <from uri="kafka:trigger"/>
       <log message="got kafka event: ${body}"/>
@@ -58,7 +21,7 @@
         <constant>application/json</constant>
       </setHeader>
       <setBody>
-        <simple>{}</simple>
+        <simple>{"id-edge":"${body}"}</simple>
       </setBody>
       <to uri="http:el-train-model-listener.tf.svc:8080"/>
     </route>
