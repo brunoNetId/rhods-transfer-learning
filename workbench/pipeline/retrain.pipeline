@@ -253,7 +253,7 @@
           ],
           "pipeline_defaults": {
             "kubernetes_shared_mem_size": {},
-            "kubernetes_pod_labels": [],
+            "kubernetes_tolerations": [],
             "kubernetes_pod_annotations": [],
             "mounted_volumes": [
               {
@@ -262,7 +262,7 @@
                 "read_only": false
               }
             ],
-            "kubernetes_tolerations": [],
+            "kubernetes_pod_labels": [],
             "env_vars": [],
             "kubernetes_secrets": [],
             "runtime_image": "quay.io/opendatahub-contrib/workbench-images:cuda-runtime-tensorflow-c9s-py39_2023c_latest"
