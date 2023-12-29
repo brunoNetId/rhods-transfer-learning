@@ -24,9 +24,13 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
    1. Open the Minio UI (_UI Route_)
    2. Login with `minio/minio123`
    3. Create buckets:
-      * **data**
-      * **production**
       * **workbench**
+      * **edge1-data**
+      * **edge1-models**
+      * **edge1-ready**
+      * **edge2-data**
+      * **edge2-models**
+      * **edge2-ready**
 
 1. Create a new *Data Science Project*.
 
