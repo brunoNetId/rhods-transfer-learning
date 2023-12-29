@@ -17,7 +17,7 @@
               "pipeline_parameters": [
                 "s3endpoint",
                 "s3bucket_data",
-                "mount_path"
+                "working_dir"
               ],
               "dependencies": [],
               "include_subdirectories": false,
@@ -76,7 +76,7 @@
           "app_data": {
             "component_parameters": {
               "pipeline_parameters": [
-                "mount_path"
+                "working_dir"
               ],
               "dependencies": [],
               "include_subdirectories": false,
@@ -143,8 +143,9 @@
             "component_parameters": {
               "pipeline_parameters": [
                 "s3endpoint",
-                "mount_path",
-                "s3bucket_models"
+                "s3bucket_models",
+                "s3bucket_ready",
+                "working_dir"
               ],
               "dependencies": [],
               "include_subdirectories": false,
@@ -234,15 +235,24 @@
             },
             {
               "name": "s3bucket_models",
-              "description": "Target bucket where to push newly trained models",
+              "description": "Repository bucket where to keep all trained models",
               "default_value": {
                 "type": "String",
-                "value": "production"
+                "value": "models"
               },
               "required": true
             },
             {
-              "name": "mount_path",
+              "name": "s3bucket_ready",
+              "description": "Target bucket where to push last trained model",
+              "default_value": {
+                "type": "String",
+                "value": "ready"
+              },
+              "required": true
+            },
+            {
+              "name": "working_dir",
               "description": "Pipeline shared storage",
               "default_value": {
                 "type": "String",
@@ -252,9 +262,6 @@
             }
           ],
           "pipeline_defaults": {
-            "kubernetes_shared_mem_size": {},
-            "kubernetes_tolerations": [],
-            "kubernetes_pod_annotations": [],
             "mounted_volumes": [
               {
                 "path": "/data",
@@ -262,7 +269,10 @@
                 "read_only": false
               }
             ],
+            "kubernetes_pod_annotations": [],
+            "kubernetes_tolerations": [],
             "kubernetes_pod_labels": [],
+            "kubernetes_shared_mem_size": {},
             "env_vars": [],
             "kubernetes_secrets": [],
             "runtime_image": "quay.io/opendatahub-contrib/workbench-images:cuda-runtime-tensorflow-c9s-py39_2023c_latest"
