@@ -1,6 +1,6 @@
 # set -x
 
-server=https://tf-server-ai-demo.apps.cluster-sfzlt.sandbox2256.opentlc.com
+server=https://tf-server-edge1.apps.cluster-sfzlt.sandbox2256.opentlc.com
 
 image=./lemon.jpg
 # image=./earl-grey.jpg
