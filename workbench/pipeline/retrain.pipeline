@@ -229,7 +229,7 @@
               "description": "Source bucket from where to load training data",
               "default_value": {
                 "type": "String",
-                "value": "data"
+                "value": "edge1-data"
               },
               "required": true
             },
@@ -238,7 +238,7 @@
               "description": "Repository bucket where to keep all trained models",
               "default_value": {
                 "type": "String",
-                "value": "models"
+                "value": "edge1-models"
               },
               "required": true
             },
@@ -247,7 +247,7 @@
               "description": "Target bucket where to push last trained model",
               "default_value": {
                 "type": "String",
-                "value": "ready"
+                "value": "edge1-ready"
               },
               "required": true
             },
@@ -256,7 +256,7 @@
               "description": "Pipeline shared storage",
               "default_value": {
                 "type": "String",
-                "value": "/data/"
+                "value": "/data/edge1/"
               },
               "required": false
             }
