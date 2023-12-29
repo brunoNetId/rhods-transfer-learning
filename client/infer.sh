@@ -2,7 +2,9 @@
 
 server=https://tf-server-edge1.apps.cluster-sfzlt.sandbox2256.opentlc.com
 
-image=./lemon.jpg
+# image=./lemon.jpg
+image=./green.jpg
+# image=./earl-grey3.jpg
 # image=./earl-grey.jpg
 # image=./earl-grey2.jpeg
 # image=./earl-grey4.jpeg
