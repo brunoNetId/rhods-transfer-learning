@@ -18,8 +18,10 @@ package org.apache.camel.example;
 
 import org.apache.camel.builder.RouteBuilder;
 
-// import org.apache.camel.BindToRegistry;
-// import org.apache.camel.component.cxf.jaxws.*;
+import org.apache.camel.BindToRegistry;
+import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 
 public class Routes extends RouteBuilder {
 
@@ -28,4 +30,61 @@ public class Routes extends RouteBuilder {
         // Routes are loaded from XML files
         // It alligns a definition standard with Fuse and Camel K
     }
+
+    //Controller declaration
+    public static class Controller {};
+
+    @BindToRegistry
+    public static Controller controller(){
+
+        //Controller implementation
+        return new Controller(){
+
+            // Helper variables
+            // boolean expiredTimeWindow = false;
+            // CountDownLatch latch      = null;
+            int pending      = 0;
+            int total        = 0;
+            // long lastMessageTime      = 0;
+            CamelContext context = null;
+
+            public synchronized void init(int pending, CamelContext context) {
+
+            	System.out.println("INIT CONTROLLER");
+
+            	this.pending = pending;
+            	this.context = context;
+            }
+
+            public void test() {
+
+            	System.out.println("TEST CONTROLLER, pending: "+pending);
+            }
+
+            public boolean isBusy() {
+
+            	// System.out.println("TEST CONTROLLER, pending: "+pending);
+            	return pending > 0;
+            }
+
+            public void jobPending() {
+            	pending++;
+            	// System.out.println("PENDING CONTROLLER, pending: "+pending);
+            }
+
+            public void jobDone() {
+
+            	pending--;
+            	total++;
+            	// System.out.println("DONE CONTROLLER, pending: "+pending);
+
+            	if(pending < 1){
+                    context.createProducerTemplate().asyncSendBody("direct:trigger-pipeline", null);
+            		System.out.println("TOTAL CONTROLLER, total: "+total);
+            		total=0;
+            	}
+            }
+        };
+    }
+
 }
