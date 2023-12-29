@@ -9,13 +9,16 @@ Prerequisites
 
 Camel needs to move AI models between S3 buckets.
 
-Deploy a Minio instance, for example:
+A central Minio instance needs to exist (where the pipeline drops new models).
+
+Ensure a Minio instance is deployed on the Edge.
+You can create one following the steps below:
  1) create a new namespace
  2) use
-    > oc apply -f ../../deployment/minio.yaml
+    > oc apply -f ../../deployment/edge/minio.yaml
  3) Open Minio's UI
  4) Login with minio/minio123
- 5) create necessary buckets (e.g. 'edge1-models' and 'edge1-ready')
+ 5) create a bucket 'production'.
 
 
 Deploy in Openshift

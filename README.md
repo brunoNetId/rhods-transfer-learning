@@ -15,9 +15,9 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
 
 1. Deploy an instance of Minio
    
-   1. Create a new project, for example `ai-demo`
-   3. Under the `ai-demo` project, deploy the following YAML resource:
-      * **deployment/minio.yaml**
+   1. Create a new project, for example `central`
+   3. Under the `central` project, deploy the following YAML resource:
+      * **deployment/central/minio.yaml**
 
 1. Create necessary S3 buckets
    
@@ -46,7 +46,7 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
    * Name: `dc1` (data connection 1)
    * Access key: `minio` 
    * Secret key: `minio123` 
-   * Endpoint: `http://minio-service.ai-demo.svc:9000` 
+   * Endpoint: `http://minio-service.central.svc:9000` 
    * Region: `eu-west-2`
    * Bucket: `workbench`
 
@@ -102,7 +102,7 @@ Enter for example the credentials `user1/openshift`.
    1. Double click on the `retrain.pipeline` resource. The pipeline will be displayed in *Elyra* (embedded visual pipeline editor in Jupyter).
    1. Hover and click on the icon with label `Export Pipeline`.
    1. Enter the following paramters:
-      * s3endpoint: `http://minio-service.ai-demo.svc:9000` 
+      * s3endpoint: `http://minio-service.central.svc:9000` 
       * leave all other parameters with default values.
    1. Click `OK`.
 
@@ -146,18 +146,45 @@ Enter for example the credentials `user1/openshift`.
    * **Manually (recommended)**: Use Minio's UI console to upload the `images` dataset under:
      * dataset/images
    * **Automatically**: Use the Camel server provided in the repository to push training data to S3. Follow the instructions under:
-     * camel/server-quarkus/Readme.txt
+     * camel/edge-feeder/Readme.txt
 
 1. Train the model.
 
    You can re-run the pipeline by clicking `Action > Start`, accept default values and click `Start`.
 
-   You should now see the pipeline succeed. It will push the new model in the `production` bucket.
+   You should now see the pipeline succeed. It will push the new model in the 2 following buckets:
+   * `edge1-models`
+   * `edge1-ready`
+
+1. Deploy a Kafka cluster
+
+   The platform uses Kafka to produce/consume events to trigger the pipeline.
+
+   1. Install the *AMQ Streams* operator in the `central` namespace.
+   1. Deploy a Kafka cluster in the `central` namespace using the following YAML resource:
+      * **deployment/central/kafka.yaml**
+
+1. Deploy the Camel delivery system
+
+    Follow instructions under:
+    * **camel/delivery/Readme.txt** 
+
+1. Create an Edge environment
+
+   1. Create a new *OpenShift* project `edge1`
+   2. Deploy a Minio instance in the `edge1` namespace using the following YAML resource:
+      * **deployment/edge/minio.yaml**
+   1. In the new Minio instance create a bucket called `production`.
+   1. Deploy the *Edge Manager*. \
+      Follow instructions under:
+      * **camel/edge-manager/Readme.txt** 
+
+
 
 1. Deploy the TensorFlow server.
 
-   Under the `ai-demo` project, deploy the following YAML resource:
-      * **deployment/tensorflow.yaml** 
+   Under the `edge1` project, deploy the following YAML resource:
+      * **deployment/edge/tensorflow.yaml** 
 
    The server will pick up the newly trained model from the S3 bucket.
 

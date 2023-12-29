@@ -18,6 +18,11 @@ Deploy a Minio instance, for example:
  5) create a bucket "data"
 
 Prepare the training data (ZIP file)
+
+ Tip: to get new collections you can browse images in Google and click "Save as..."
+ Then find all files named 'images(n)' and rename them to jpg using:
+  > find . -type f -exec mv "{}" "{}.jpg" \;
+
  You need to compress the data from the "dataset" folder and preserve the correct paths.
 
  1) Execute:

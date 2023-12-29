@@ -79,11 +79,11 @@
             <artifactId>camel-quarkus-exec</artifactId>
         </dependency>
 
-<!--         <dependency>
+        <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-controlbus</artifactId>
         </dependency>
- -->
+
     <dependency>
       <groupId>org.apache.camel.quarkus</groupId>
       <artifactId>camel-quarkus-zipfile</artifactId>
