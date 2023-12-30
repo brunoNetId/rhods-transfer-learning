@@ -152,7 +152,7 @@ Enter for example the credentials `user1/openshift`.
 
    You can re-run the pipeline by clicking `Action > Start`, accept default values and click `Start`.
 
-   You should now see the pipeline succeed. It will push the new model in the 2 following buckets:
+   You should now see the pipeline succeed. It will push the new model to the following buckets:
    * `edge1-models`
    * `edge1-ready`
 
