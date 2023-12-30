@@ -167,7 +167,7 @@ Enter for example the credentials `user1/openshift`.
 1. Deploy the Camel delivery system
 
     Follow instructions under:
-    * **camel/delivery/Readme.txt** 
+    * **camel/central-delivery/Readme.txt** 
 
 1. Create an Edge environment
 
