@@ -9,9 +9,26 @@ This project contains resources to showcase a full circle continuous motion of d
 
 The following list summarises the steps to deploy the demo:
 
+1. Provision a RHODS environment
+1. Create and prepare the RHODS project.
+1. Create the AI/ML Pipeline.
+1. Deliver the AI/ML model and run the server
+1. Automate the Pipeline
+3. 
+
+<br/>
+
+### Provision a RHODS environment
+
 1. Provision the following RHDP item:
    * Base RHODS on AWS: \
 https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-workshop-rhods-base-aws.prod&utm_source=webapp&utm_medium=share-link
+
+2. Log in with the given credentials.
+
+<br/>
+
+### Create the RHODS project
 
 1. Deploy an instance of Minio
    
@@ -23,11 +40,11 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
    
    1. Open the Minio UI (_UI Route_)
    2. Login with `minio/minio123`
-   3. Create buckets:
-      * **workbench**
+   3. Create buckets for Edge-1:
       * **edge1-data**
       * **edge1-models**
       * **edge1-ready**
+   3. Create buckets for Edge-2:
       * **edge2-data**
       * **edge2-models**
       * **edge2-ready**
@@ -85,6 +102,10 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
    When your workbench is in *Running* status, click `Open`. \
 Enter for example the credentials `user1/openshift`.
 
+<br/>
+
+### Create the AI/ML Pipeline
+
 1. Upload the pipeline sources to the project tree.
 
    > [!CAUTION] 
@@ -132,7 +153,7 @@ Enter for example the credentials `user1/openshift`.
    ```
    Complete the YAML code above with the `pipelineSpec` definition from your exported YAML file in Jupyter.
       > [!CAUTION] 
-      > Make sure your un-tab one level the `pipelineSpec` definition to make the resource valid.
+      > Make sure you un-tab one level the `pipelineSpec` definition to make the resource valid.
 
    Click `Create`.
 
@@ -156,20 +177,11 @@ Enter for example the credentials `user1/openshift`.
    * `edge1-models`
    * `edge1-ready`
 
-1. Deploy a Kafka cluster
+<br/>
 
-   The platform uses Kafka to produce/consume events to trigger the pipeline.
+### Deliver the AI/ML model and run the server
 
-   1. Install the *AMQ Streams* operator in the `central` namespace.
-   1. Deploy a Kafka cluster in the `central` namespace using the following YAML resource:
-      * **deployment/central/kafka.yaml**
-
-1. Deploy the Camel delivery system
-
-    Follow instructions under:
-    * **camel/central-delivery/Readme.txt** 
-
-1. Create an Edge environment
+1. Prepare the Edge-1 environment
 
    1. Create a new *OpenShift* project `edge1`
    2. Deploy a Minio instance in the `edge1` namespace using the following YAML resource:
@@ -178,7 +190,8 @@ Enter for example the credentials `user1/openshift`.
    1. Deploy the *Edge Manager*. \
       Follow instructions under:
       * **camel/edge-manager/Readme.txt** 
-
+      
+      The *Edge Manager* moves the model from the `edge1-ready` (central) to `production` (edge1).
 
 
 1. Deploy the TensorFlow server.
@@ -186,7 +199,8 @@ Enter for example the credentials `user1/openshift`.
    Under the `edge1` project, deploy the following YAML resource:
       * **deployment/edge/tensorflow.yaml** 
 
-   The server will pick up the newly trained model from the S3 bucket.
+   The server will pick up the newly trained model from the `production` S3 bucket.
+
 
 1. Run an inference request.
 
@@ -206,9 +220,15 @@ Enter for example the credentials `user1/openshift`.
       "predictions": ["tea-lemon", "0.866093"]
       ```
 
+<br/>
+
+### Automate the Pipeline
+
 1. Create a Pipeline trigger.
 
-   The pipeline will eventually become automatically triggered when new data to retrain the model becomes available. Follow the steps below to create the trigger.
+   The next stage makes the pipeline triggerable. When new training data becomes available, the platform automatically triggers the pipeline to produce a new version of the model. 
+   
+   Follow the steps below to create the trigger.
 
    To provision the YAML resources below, make sure you switch to the `tf` project where your pipeline was created.
 
@@ -239,9 +259,22 @@ Enter for example the credentials `user1/openshift`.
     ```
    Switch to the Pipelines view to inspect if a new pipeline is in execution.
 
-   a. When the pipeline succeeds, a new model version will show up in the `production` S3 bucket.
+   a. When the pipeline succeeds, a new model version will show up in the `edge1-models` S3 bucket.
    
-   b. When a new model version is pushed, the Model server will detect the new version and hot reload it.
+   b. The pipeline also pushes the new model to the `edge1-ready` bucket. The *Edge Manager* moves the model to the *Edge Minio* instance, into the `production` bucket.  The Model server will detect the new version and hot reload it.
+
+1. Deploy a Kafka cluster
+
+   The platform uses Kafka to produce/consume events to trigger the pipeline automatically.
+
+   1. Install the *AMQ Streams* operator in the `central` namespace.
+   1. Deploy a Kafka cluster in the `central` namespace using the following YAML resource:
+      * **deployment/central/kafka.yaml**
+
+1. Deploy the Camel delivery system
+
+    Follow instructions under:
+    * **camel/central-delivery/Readme.txt** 
 
 1. MORE ITEMS
 
