@@ -5,7 +5,8 @@ This project contains resources to showcase a full circle continuous motion of d
    > [!CAUTION] 
    > This project is still under construction. The instructions below are temporary and will change as the project evolves.
 
-RHODS artifacts are not YAML definable, they require manual intervention. Although tedious and time consuming, by the end of the deployment procedure (below), you will be able to understand how the full cycle connects all the stages together (acquisition, training, delivery, inferencing).
+RHODS artifacts are not YAML editable, they require UI interaction. \
+Although tedious and time consuming, by the end of the deployment procedure (below), you will be able to understand how the full cycle connects all the stages together (acquisition, training, delivery, inferencing).
 
 ## Tested with
 
@@ -19,11 +20,12 @@ RHODS artifacts are not YAML definable, they require manual intervention. Althou
 The following list summarises the steps to deploy the demo:
 
 1. Provision a RHODS environment
-1. Create and prepare the RHODS project.
+1. Create and prepare a RHODS project.
 1. Create and run the AI/ML Pipeline.
-1. Deliver the AI/ML model and run the server
-1. Create a trigger for the Pipeline
-3. Deploy the data ingestion system
+1. Deliver the AI/ML model and run the ML server.
+1. Create a trigger for the Pipeline.
+3. Deploy the data ingestion system.
+1. Test the end to end solution.
 
 <br/>
 
@@ -37,7 +39,7 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
 
 <br/>
 
-### Create the RHODS project
+### Create a RHODS project
 
 1. Deploy an instance of Minio
    
@@ -193,7 +195,7 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
 
 <br/>
 
-### Deliver the AI/ML model and run the server
+### Deliver the AI/ML model and run the ML server
 
 1. Prepare the Edge-1 environment
 
