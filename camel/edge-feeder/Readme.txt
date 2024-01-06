@@ -9,13 +9,14 @@ Prerequisites
 
 Camel needs to push training data (images) to an S3 bucket.
 
-Deploy a Minio instance, for example:
- 1) create a new namespace
+Ensure a Minio instance is deployed on 'central'.
+If one doesn't exist, you can create it following the steps below:
+ 1) create a new namespace (e.g. central)
  2) use
-    > oc apply -f ../../deployment/minio.yaml
+    > oc apply -f ../../deployment/central/minio.yaml
  3) Open Minio's UI
  4) Login with minio/minio123
- 5) create a bucket "data"
+ 5) create a bucket 'edge1-data'.
 
 Prepare the training data (ZIP file)
 
@@ -44,11 +45,13 @@ To run it locally with the command below:
 Deploy in Openshift
 ===================
 
+oc project edge1
+
 ./mvnw clean package -DskipTests -Dquarkus.kubernetes.deploy=true
 
 Make sure you expose the service:
 
-oc expose service demo
+oc expose service feeder
 
 
 Test the service
@@ -56,8 +59,8 @@ Test the service
 
 You should have already the following resources ready:
  
- - Minio deployed with a 'data' bucket
- - Camel service 'demo' deployed and a route available.
+ - Minio deployed with a 'edge1-data' bucket
+ - Camel service 'feeder' deployed and a route available.
  - ZIP file (training data) 'data.zip'.
 
 To push the training data, execute with curl the following command:
@@ -66,4 +69,5 @@ To push the training data, execute with curl the following command:
 curl -v -T data.zip http://localhost:8080/zip
 
 (openshift)
-curl -v -T data.zip http://ROUTE_URL/zip
+ROUTE=$(oc get routes -o jsonpath={.items[?(@.metadata.name==\'feeder\')].spec.host}) && \
+curl -v -T data.zip http://$ROUTE/zip

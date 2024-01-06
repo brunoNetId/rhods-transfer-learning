@@ -1,7 +1,7 @@
 Introduction
 ============
 
-This project contains a manager service to fetch new AI models and bring them to the edge for local inferencing.
+This project contains a manager service to fetch newly trained AI models and bring them to the edge for local inferencing.
 
 
 Prerequisites
@@ -13,7 +13,7 @@ A central Minio instance needs to exist (where the pipeline drops new models).
 
 Ensure a Minio instance is deployed on the Edge.
 You can create one following the steps below:
- 1) create a new namespace
+ 1) create a new namespace (e.g. edge1)
  2) use
     > oc apply -f ../../deployment/edge/minio.yaml
  3) Open Minio's UI
@@ -23,6 +23,8 @@ You can create one following the steps below:
 
 Deploy in Openshift
 ===================
+
+oc project edge1
 
 ./mvnw clean package -DskipTests -Dquarkus.kubernetes.deploy=true
 

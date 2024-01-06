@@ -1,6 +1,6 @@
 # set -x
 
-server=https://tf-server-edge1.apps.cluster-sfzlt.sandbox2256.opentlc.com
+server=https://tf-server-edge1.apps.cluster-4jdgl.sandbox1049.opentlc.com
 
 # image=./lemon.jpg
 image=./green.jpg
