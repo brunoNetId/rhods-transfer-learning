@@ -4,5 +4,254 @@ metadata:
   name: train-model
   namespace: tf
 spec:
-
-  [Copy paste here contents of 'pipelineSpec']
+  params:
+  - name: s3bucket_data
+    default: edge1-data
+  - name: s3bucket_models
+    default: edge1-models
+  - name: s3bucket_ready
+    default: edge1-ready
+  - name: s3endpoint
+    default: http://minio-service.central.svc:9000
+  - name: working_dir
+    default: /data/edge1/
+  tasks:
+  - name: run-a-file
+    params:
+    - name: s3bucket_data
+      value: $(params.s3bucket_data)
+    - name: s3endpoint
+      value: $(params.s3endpoint)
+    - name: working_dir
+      value: $(params.working_dir)
+    taskSpec:
+      steps:
+      - name: main
+        args:
+        - |
+          s3endpoint="$0"
+          s3bucket_data="$1"
+          working_dir="$2"
+          sh -c "mkdir -p ./jupyter-work-dir && cd ./jupyter-work-dir"
+          sh -c "echo 'Downloading file:///opt/app-root/bin/utils/bootstrapper.py' && curl --fail -H 'Cache-Control: no-cache' -L file:///opt/app-root/bin/utils/bootstrapper.py --output bootstrapper.py"
+          sh -c "echo 'Downloading file:///opt/app-root/bin/utils/requirements-elyra.txt' && curl --fail -H 'Cache-Control: no-cache' -L file:///opt/app-root/bin/utils/requirements-elyra.txt --output requirements-elyra.txt"
+          sh -c "python3 -m pip install  packaging && python3 -m pip freeze > requirements-current.txt && python3 bootstrapper.py --pipeline-name 'retrain' --cos-endpoint 'http://minio-service.central.svc:9000' --cos-bucket 'workbench' --cos-directory 'retrain-0109181508' --cos-dependencies-archive 'step-01-6764011e-55f5-4d4d-a8c2-252b1de09bc8.tar.gz' --file 'step-01.ipynb' --pipeline-parameters 's3endpoint=$s3endpoint;s3bucket_data=$s3bucket_data;working_dir=$working_dir' --parameter-pass-method 'env' "
+        - $(inputs.params.s3endpoint)
+        - $(inputs.params.s3bucket_data)
+        - $(inputs.params.working_dir)
+        command:
+        - sh
+        - -c
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              key: AWS_ACCESS_KEY_ID
+              name: aws-connection-dc1
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              key: AWS_SECRET_ACCESS_KEY
+              name: aws-connection-dc1
+        - name: ELYRA_RUNTIME_ENV
+          value: kfp
+        - name: ELYRA_ENABLE_PIPELINE_INFO
+          value: "True"
+        - name: ELYRA_WRITABLE_CONTAINER_DIR
+          value: /tmp
+        - name: ELYRA_RUN_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.annotations['pipelines.kubeflow.org/run_name']
+        image: quay.io/opendatahub-contrib/workbench-images:cuda-runtime-tensorflow-c9s-py39_2023c_latest
+        volumeMounts:
+        - mountPath: /data
+          name: pipeline-pvc
+          readOnly: false
+      params:
+      - name: s3bucket_data
+      - name: s3endpoint
+      - name: working_dir
+      stepTemplate:
+        volumeMounts:
+        - name: mlpipeline-metrics
+          mountPath: /tmp
+      volumes:
+      - name: mlpipeline-metrics
+        emptyDir: {}
+      - name: pipeline-pvc
+        persistentVolumeClaim:
+          claimName: pipeline-pvc
+      metadata:
+        labels:
+          elyra/node-type: notebook-script
+          elyra/pipeline-name: retrain
+          elyra/pipeline-version: ''
+          elyra/experiment-name: ''
+          elyra/node-name: load_data
+          pipelines.kubeflow.org/cache_enabled: "true"
+        annotations:
+          elyra/node-file-name: step-01.ipynb
+          elyra/pipeline-source: retrain.pipeline
+          pipelines.kubeflow.org/task_display_name: load_data
+          pipelines.kubeflow.org/component_spec_digest: '{"name": "Run a file",
+            "outputs": [], "version": "Run a file@sha256=d8d27dbe6138eb0cd0bd6d05f506fc069d4c0c8a22cff5ec4e8667d85eb7687b"}'
+  - name: run-a-file-2
+    params:
+    - name: working_dir
+      value: $(params.working_dir)
+    taskSpec:
+      steps:
+      - name: main
+        args:
+        - |
+          working_dir="$0"
+          sh -c "mkdir -p ./jupyter-work-dir && cd ./jupyter-work-dir"
+          sh -c "echo 'Downloading file:///opt/app-root/bin/utils/bootstrapper.py' && curl --fail -H 'Cache-Control: no-cache' -L file:///opt/app-root/bin/utils/bootstrapper.py --output bootstrapper.py"
+          sh -c "echo 'Downloading file:///opt/app-root/bin/utils/requirements-elyra.txt' && curl --fail -H 'Cache-Control: no-cache' -L file:///opt/app-root/bin/utils/requirements-elyra.txt --output requirements-elyra.txt"
+          sh -c "python3 -m pip install  packaging && python3 -m pip freeze > requirements-current.txt && python3 bootstrapper.py --pipeline-name 'retrain' --cos-endpoint 'http://minio-service.central.svc:9000' --cos-bucket 'workbench' --cos-directory 'retrain-0109181508' --cos-dependencies-archive 'step-02-8af3247b-bc48-42f1-9f25-95e1de81169a.tar.gz' --file 'step-02.ipynb' --pipeline-parameters 'working_dir=$working_dir' --parameter-pass-method 'env' "
+        - $(inputs.params.working_dir)
+        command:
+        - sh
+        - -c
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              key: AWS_ACCESS_KEY_ID
+              name: aws-connection-dc1
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              key: AWS_SECRET_ACCESS_KEY
+              name: aws-connection-dc1
+        - name: ELYRA_RUNTIME_ENV
+          value: kfp
+        - name: ELYRA_ENABLE_PIPELINE_INFO
+          value: "True"
+        - name: ELYRA_WRITABLE_CONTAINER_DIR
+          value: /tmp
+        - name: ELYRA_RUN_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.annotations['pipelines.kubeflow.org/run_name']
+        image: quay.io/opendatahub-contrib/workbench-images:cuda-runtime-tensorflow-c9s-py39_2023c_latest
+        volumeMounts:
+        - mountPath: /data
+          name: pipeline-pvc
+          readOnly: false
+      params:
+      - name: working_dir
+      stepTemplate:
+        volumeMounts:
+        - name: mlpipeline-metrics
+          mountPath: /tmp
+      volumes:
+      - name: mlpipeline-metrics
+        emptyDir: {}
+      - name: pipeline-pvc
+        persistentVolumeClaim:
+          claimName: pipeline-pvc
+      metadata:
+        labels:
+          elyra/node-type: notebook-script
+          elyra/pipeline-name: retrain
+          elyra/pipeline-version: ''
+          elyra/experiment-name: ''
+          elyra/node-name: create_model
+          pipelines.kubeflow.org/cache_enabled: "true"
+        annotations:
+          elyra/node-file-name: step-02.ipynb
+          elyra/pipeline-source: retrain.pipeline
+          pipelines.kubeflow.org/task_display_name: create_model
+          pipelines.kubeflow.org/component_spec_digest: '{"name": "Run a file",
+            "outputs": [], "version": "Run a file@sha256=469fc064a5f885862fadded58121ac438d47298d1df33298c2c91cdb106e47f7"}'
+    runAfter:
+    - run-a-file
+  - name: run-a-file-3
+    params:
+    - name: s3bucket_models
+      value: $(params.s3bucket_models)
+    - name: s3bucket_ready
+      value: $(params.s3bucket_ready)
+    - name: s3endpoint
+      value: $(params.s3endpoint)
+    - name: working_dir
+      value: $(params.working_dir)
+    taskSpec:
+      steps:
+      - name: main
+        args:
+        - |
+          s3endpoint="$0"
+          s3bucket_models="$1"
+          s3bucket_ready="$2"
+          working_dir="$3"
+          sh -c "mkdir -p ./jupyter-work-dir && cd ./jupyter-work-dir"
+          sh -c "echo 'Downloading file:///opt/app-root/bin/utils/bootstrapper.py' && curl --fail -H 'Cache-Control: no-cache' -L file:///opt/app-root/bin/utils/bootstrapper.py --output bootstrapper.py"
+          sh -c "echo 'Downloading file:///opt/app-root/bin/utils/requirements-elyra.txt' && curl --fail -H 'Cache-Control: no-cache' -L file:///opt/app-root/bin/utils/requirements-elyra.txt --output requirements-elyra.txt"
+          sh -c "python3 -m pip install  packaging && python3 -m pip freeze > requirements-current.txt && python3 bootstrapper.py --pipeline-name 'retrain' --cos-endpoint 'http://minio-service.central.svc:9000' --cos-bucket 'workbench' --cos-directory 'retrain-0109181508' --cos-dependencies-archive 'step-03-9860d935-5991-4391-a6dd-2e0af6f912a3.tar.gz' --file 'step-03.ipynb' --pipeline-parameters 's3endpoint=$s3endpoint;s3bucket_models=$s3bucket_models;s3bucket_ready=$s3bucket_ready;working_dir=$working_dir' --parameter-pass-method 'env' "
+        - $(inputs.params.s3endpoint)
+        - $(inputs.params.s3bucket_models)
+        - $(inputs.params.s3bucket_ready)
+        - $(inputs.params.working_dir)
+        command:
+        - sh
+        - -c
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              key: AWS_ACCESS_KEY_ID
+              name: aws-connection-dc1
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              key: AWS_SECRET_ACCESS_KEY
+              name: aws-connection-dc1
+        - name: ELYRA_RUNTIME_ENV
+          value: kfp
+        - name: ELYRA_ENABLE_PIPELINE_INFO
+          value: "True"
+        - name: ELYRA_WRITABLE_CONTAINER_DIR
+          value: /tmp
+        - name: ELYRA_RUN_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.annotations['pipelines.kubeflow.org/run_name']
+        image: quay.io/opendatahub-contrib/workbench-images:cuda-runtime-tensorflow-c9s-py39_2023c_latest
+        volumeMounts:
+        - mountPath: /data
+          name: pipeline-pvc
+          readOnly: false
+      params:
+      - name: s3bucket_models
+      - name: s3bucket_ready
+      - name: s3endpoint
+      - name: working_dir
+      stepTemplate:
+        volumeMounts:
+        - name: mlpipeline-metrics
+          mountPath: /tmp
+      volumes:
+      - name: mlpipeline-metrics
+        emptyDir: {}
+      - name: pipeline-pvc
+        persistentVolumeClaim:
+          claimName: pipeline-pvc
+      metadata:
+        labels:
+          elyra/node-type: notebook-script
+          elyra/pipeline-name: retrain
+          elyra/pipeline-version: ''
+          elyra/experiment-name: ''
+          elyra/node-name: push_model
+          pipelines.kubeflow.org/cache_enabled: "true"
+        annotations:
+          elyra/node-file-name: step-03.ipynb
+          elyra/pipeline-source: retrain.pipeline
+          pipelines.kubeflow.org/task_display_name: push_model
+          pipelines.kubeflow.org/component_spec_digest: '{"name": "Run a file",
+            "outputs": [], "version": "Run a file@sha256=06cc55039e587c918e59cf022e11657d5e5ad45ded80847f2450ea9e41cf925c"}'
+    runAfter:
+    - run-a-file-2

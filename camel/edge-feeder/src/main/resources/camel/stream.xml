@@ -78,6 +78,11 @@
         </setHeader>
 
 <to uri="aws2-s3:{{edge.id}}-data"/>
+
+<setBody>
+    <simple>{"name":"zipfile"}</simple>
+</setBody>
+<to uri="kafka:{{edge.id}}"/>
         <!-- <log message="file stored: ${header.CamelAwsS3Key}"/> -->
     </route>
 
@@ -132,6 +137,23 @@
         </setBody>
         <log message="sending event: ${body}"/>
 <to uri="kafka:trigger"/>
+<wireTap uri="direct:notify-monitor"/>
+    </route>
+
+
+    <route id="notify-monitor">
+        <from uri="direct:notify-monitor"/>
+
+        <toD uri="{{ds:aws2-s3}}:{{edge.id}}-data?operation=listObjects"/>
+        <!-- <to uri="aws2-s3:data?operation=listObjects"/> -->
+
+        <log message="size of collection: ${body.size}"/>
+
+        <setBody>
+            <simple>{"name":"pipeline", "files":"${body.size}"}</simple>
+        </setBody>
+        <to uri="kafka:{{edge.id}}"/>
+
     </route>
 
 </routes>

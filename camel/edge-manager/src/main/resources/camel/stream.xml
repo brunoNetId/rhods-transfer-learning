@@ -43,6 +43,18 @@
         <log message="uploading: ${header.CamelAwsS3Key}"/>
 
         <to uri="aws2-s3:production?{{camel.uri.s3.parameters}}"/>
+
+
+        <log message="uploaded: ${header.CamelAwsS3Key}"/>
+
+        <!-- Models contain multiple files. We send only 1 notification -->
+        <when>
+            <simple>${header.CamelAwsS3Key} contains "saved_model.pb"</simple>
+            <setBody>
+                <simple>{"name":"pushmodel"}</simple>
+            </setBody>
+            <to uri="{{mqtt.uri.monitor}}"/>
+        </when>
     </route>
 
 

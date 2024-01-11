@@ -13,7 +13,9 @@ Although tedious and time consuming, by the end of the deployment procedure (bel
 * RHODS 2.5.0 provided by Red Hat
 * RHO Pipelines 1.10.4 provided by Red Hat
 * AMQ-Streams 2.6.0-0 provided by Red Hat
+* AMQ Broker 7.11.4 provided by Red Hat
 * Red Hat build of Apache Camel 4
+* Camel K 1.10 provided by Red Hat
 
 ## Deployment instructions
 
@@ -366,3 +368,46 @@ Procedure:
    ```
    ./infer.sh
    ```
+
+
+<br/>
+<br/>
+
+### Pending deployment steps
+
+Cluster wide installation:
+
+* Install Camel K Operator
+  * Red Hat Integration - Camel K \
+    1.10.5 provided by Red Hat
+
+<br>
+
+Edge1 namespace:
+
+* Install AMQ Broker Operator:
+  * Red Hat Integration - AMQ Broker for RHEL 8 (Multiarch)
+7.11.4-opr-1 provided by Red Hat
+
+* Create a route for external MQTT connectivity
+    ```
+    kamel run price-engine.xml \
+    --resource file:catalogue.json
+    ```
+* Deploy AMQ Broker to enable MQTT communication
+    ```
+    oc create route edge broker-amq-mqtt --service broker-amq-mqtt-0-svc
+    ```
+* Deploy **edbe-monitor** Camel system
+* Deploy Price engine (Camel K)
+    ```
+    kamel run price-engine.xml \
+    --resource file:catalogue.json
+    ```
+
+* Deploy Shopper App
+
+* Create Route for external connectivity:
+    ```
+    oc create route edge camel-edge --service shopper
+    ```

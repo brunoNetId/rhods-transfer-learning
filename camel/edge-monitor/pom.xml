@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.demo</groupId>
-    <artifactId>manager</artifactId>
+    <artifactId>monitor</artifactId>
     <version>1.0.0</version>
 
   <properties>
@@ -79,7 +79,12 @@
             <artifactId>camel-quarkus-exec</artifactId>
         </dependency>
 
-    <dependency>
+        <dependency>
+            <groupId>org.apache.camel.quarkus</groupId>
+            <artifactId>camel-quarkus-controlbus</artifactId>
+        </dependency> -->
+
+<!--     <dependency>
       <groupId>org.apache.camel.quarkus</groupId>
       <artifactId>camel-quarkus-zipfile</artifactId>
     </dependency> -->
@@ -99,37 +104,34 @@
       <groupId>org.apache.camel.quarkus</groupId>
       <artifactId>camel-quarkus-log</artifactId>
     </dependency>
-    <dependency>
+     <dependency>
       <groupId>org.apache.camel.quarkus</groupId>
       <artifactId>camel-quarkus-timer</artifactId>
     </dependency>
-
-
-    <dependency>
-      <groupId>org.apache.camel.quarkus</groupId>
-      <artifactId>camel-quarkus-paho-mqtt5</artifactId>
-    </dependency>
-
-<!--     <dependency>
+<!--    <dependency>
       <groupId>org.apache.camel.quarkus</groupId>
       <artifactId>camel-quarkus-bean</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.camel.quarkus</groupId>
       <artifactId>camel-quarkus-http</artifactId>
-    </dependency> -->
-<!--     <dependency>
+    </dependency>
+    <dependency>
       <groupId>org.apache.camel.quarkus</groupId>
       <artifactId>camel-quarkus-jq</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.camel.quarkus</groupId>
       <artifactId>camel-quarkus-base64</artifactId>
-    </dependency>
+    </dependency> -->
     <dependency>
       <groupId>org.apache.camel.quarkus</groupId>
       <artifactId>camel-quarkus-kafka</artifactId>
-    </dependency> -->
+    </dependency>
+    <dependency>
+        <groupId>org.apache.camel.quarkus</groupId>
+        <artifactId>camel-quarkus-paho</artifactId>
+    </dependency>
 
 <!-- dependency=mvn:org.apache.camel:camel-file:3.21.1
 dependency=mvn:org.apache.camel:camel-direct:3.21.1

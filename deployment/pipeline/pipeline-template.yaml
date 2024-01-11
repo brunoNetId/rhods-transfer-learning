@@ -1,0 +1,8 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: train-model
+  namespace: tf
+spec:
+
+  [Copy paste here contents of 'pipelineSpec']

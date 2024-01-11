@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- camel-k: language=xml -->
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://camel.apache.org/schema/spring"
+        xsi:schemaLocation="
+            http://camel.apache.org/schema/spring
+            https://camel.apache.org/schema/spring/camel-spring.xsd">
+
+
+
+
+    <route id="notifier">
+        <from uri="{{kafka.uri.edge}}"/>
+        <!-- <from uri="paho:{{edge.id}}"/> -->
+<!--         <setBody>
+            <simple>{{edge.id}}</simple>
+        </setBody> -->
+        <log message="got: ${body}"/>
+        <!-- <to uri="log:mqtt?showAll=true"/> -->
+        <to uri="{{mqtt.uri.monitor}}"/>
+    </route>
+
+<!--     <route id="test">
+        <from uri="timer:test?repeatCount=3"/>
+        <setBody>
+            <simple>{"name":"zipdata"}</simple>
+        </setBody>
+        <to uri="paho:{{edge.id}}"/>
+    </route>
+ -->
+
+</routes>
