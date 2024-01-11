@@ -1,0 +1,72 @@
+<html lang=”en”>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+		<!-- Name of the app -->
+		<title>Camera App</title>
+
+		<!-- Link to main style sheet -->
+		<link rel="stylesheet" href="style.css"> 
+	</head>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+
+	<body>
+
+		<!-- Camera -->
+		<main id="camera">
+
+		    <!-- Camera sensor -->
+		    <canvas id="camera--sensor"></canvas>
+		    
+		    <!-- Camera view -->
+		    <video id="camera--view" autoplay playsinline ></video>
+		    
+		    <!-- Camera output -->
+		    <img src="//:0" alt="" id="camera--output" >
+
+		    <button id="btn-index" onclick="window.location.href='index.html'">Back</button>
+
+		    <!-- Camera trigger -->
+		    <button id="camera--trigger">Take a picture</button>
+
+			<input id="fileInput" type="file" style="display:none;" />
+			<!-- <input type="button" value="Choose Files!" onclick="document.getElementById('fileInput').click();" /> -->
+		    <button id="device--trigger" onclick="document.getElementById('fileInput').click();">Pick from Device</button>
+
+		    <!-- Camera trigger -->
+		    <button id="protocol--http" hidden><small id="http-status" style="color:lightgreen;">⬤ &nbsp; &nbsp;</small>via HTTP</button>
+		    <button id="protocol--mqtt" hidden disabled><small id="mqtt-status" style="color:red;">⬤ &nbsp; &nbsp;</small>via MQTT</button>
+
+			<!-- <div > -->
+			<label id="message--banner" >hello</label>
+			<!-- </div> -->
+
+
+			 <!-- <form id="product-picker" action="#" style="display:none;"> -->
+			 <!-- <form id="product-picker" style="display:none;" action="#"> -->
+			 <!-- <div id="product-picker" style="display:none;" onsubmit="submitProduct()"> -->
+			 <div id="product-picker" style="display:none;">
+<!-- 			      <label for="lang">Language</label>
+			      <select name="languages" id="lang">
+			        <option value="select">Select a Language</option>
+			        <option value="javascript">JavaScript</option>
+			        <option value="php">PHP</option>
+			        <option value="java">Java</option>
+			        <option value="golang">Golang</option>
+			        <option value="python">Python</option>
+			        <option value="c#">C#</option>
+			        <option value="C++">C++</option>
+			        <option value="erlang">Erlang</option>
+			      </select>
+			      <input type="submit" value="Submit" /> -->
+			</div>
+
+		</main>
+
+		<!-- Reference to your JavaScript file -->
+		<script src="app.js"></script> 
+	</body>
+</html>

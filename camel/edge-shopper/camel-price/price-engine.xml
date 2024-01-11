@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- camel-k: language=xml dependency=camel-language -->
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://camel.apache.org/schema/spring"
+        xsi:schemaLocation="
+            http://camel.apache.org/schema/spring
+            https://camel.apache.org/schema/spring/camel-spring.xsd">
+
+
+    <route id="get-item">
+        <from uri="platform-http:/item"/>
+        <!-- <from uri="direct:get-item"/> -->
+        <unmarshal>
+            <json/>
+        </unmarshal>
+                <!-- Find item for product -->
+        <setHeader name="product">
+            <simple>${body[product]}</simple>
+        </setHeader>
+        <to uri="language:constant:resource:classpath:catalogue.json"/>
+        <setBody>
+            <jq>.[] | select(.label == header("product")).item</jq>
+        </setBody>
+<!--         <setProperty name="product">
+            <simple>${body}</simple>
+        </setProperty> -->
+        <setBody>
+            <simple>{"item":"${body}"}</simple>
+        </setBody>
+    </route>
+
+
+    <!-- Write your routes here, for example: -->
+<!--     <route id="test-get-item">
+        <from uri="timer:item?repeatCount=1"/>
+        <setBody>
+            <simple>{"product":"Lemon Tea"}</simple>
+        </setBody>
+        <to uri="direct:get-item"/>
+        <log message="response: ${body}"/>
+    </route> -->
+
+
+
+	<!-- Write your routes here, for example: -->
+    <route id="main">
+        <from uri="platform-http:/price"/>
+        <to uri="language:constant:resource:classpath:catalogue.json"/>
+        <setBody>
+            <!-- <jsonpath>$[?(@.item == '${header.item}')].price</jsonpath> -->
+            <jsonpath>$[?(@.item == '${header.item}')]</jsonpath>
+        </setBody>
+
+        <log message="${body}"/>
+
+            <setBody>
+                <simple>${body[0]}</simple>
+            </setBody>
+        
+        <choice>
+            <when>
+                <simple>${body[item]} == "other"</simple>
+                <log message="need to provide list of products"/>
+                <!-- <to uri="language:simple:${body.put(value,'something')}?transform=false"/> -->
+                <to uri="direct:products"/>
+                <log message="new: ${body}"/>
+            </when>
+        </choice>
+
+        <marshal>
+            <json/>
+        </marshal>
+<!--         <when>
+            <simple>${body.size} &gt; 0</simple>
+            <setBody>
+                <simple>${body[0]}</simple>
+            </setBody>
+        </when> -->
+        <convertBodyTo type="String"/>
+    </route>
+
+
+    <route id="test">
+        <from uri="timer:products?repeatCount=1"/>
+        <to uri="language:constant:resource:classpath:catalogue.json"/>
+        <setBody>
+            <!-- <jsonpath>$[?(@.item == '${header.item}')].price</jsonpath> -->
+            <jq>.[] | select(.label!="Unknown product").label</jq>
+        </setBody>
+
+        <log message="${body}"/>
+    </route>
+
+    <route id="products">
+        <from uri="direct:products"/>
+        <setProperty name="temp">
+            <simple>${body}</simple>
+        </setProperty>
+
+        <to uri="language:constant:resource:classpath:catalogue.json"/>
+        <setProperty name="products">
+
+            <!-- <jsonpath>$[?(@.item == '${header.item}')].price</jsonpath> -->
+            <!-- <jq>.[] | select(.label!="Unknown product").label</jq> -->
+            <jq>.[].label</jq>
+        </setProperty>
+
+        <setBody>
+            <simple>${exchangeProperty.temp}</simple>
+        </setBody>
+
+        <to uri="language:simple:${body.put(products,${exchangeProperty.products})}?transform=false"/>
+
+
+        <log message="${body}"/>
+    </route>
+
+</routes>

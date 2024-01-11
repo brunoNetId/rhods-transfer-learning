@@ -1,0 +1,437 @@
+html, body{
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+
+#camera, #camera--view, #camera--sensor, #camera--output{
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+}
+
+#camera--view, #camera--sensor, #camera--output{
+    /*transform: scaleX(-1);*/
+    /*filter: FlipH;*/
+}
+
+/*#btn-index2{
+    width: 200px;
+    background-color: grey;
+    color: white;
+    font-size: 16px;
+    border-radius: 30px;
+    border: none;
+    padding: 15px 20px;
+    text-align: center;
+    box-shadow: 0 5px 10px 0 rgba(0,0,0,0.2);
+    position: fixed;
+    bottom: calc(90%);
+    left: calc(10% - 100px);
+    box-shadow: 0 5px #666;
+    z-index:1;
+}
+*/
+#btn-index, #btn-view1, #btn-view2, #btn-view3{
+    width: 75px;
+    /*height: 50px;*/
+    background-color: grey;
+    color: white;
+    font-size: 16px;
+    border-radius: 30px;
+    border: none;
+    padding: 15px 20px;
+    text-align: center;
+    box-shadow: 0 5px 10px 0 rgba(0,0,0,0.2);
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    box-shadow: 0 5px #666;
+    z-index:1;
+}
+
+#btn-train-data, #btn-sim-unzip, #btn-sim-pipeline-start, #btn-sim-pipeline-end{
+    width: 150px;
+    background-color: grey;
+    color: white;
+    font-size: 16px;
+    border-radius: 30px;
+    border: none;
+    padding: 15px 20px;
+    text-align: center;
+    box-shadow: 0 5px 10px 0 rgba(0,0,0,0.2);
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    box-shadow: 0 5px #666;
+    z-index:1;
+}
+
+#btn-train-data:active,
+#btn-sim-unzip:active, 
+#btn-sim-pipeline-start:active,
+#btn-sim-pipeline-end:active,
+#btn-view1:active,#btn-view2:active,#btn-view3:active {
+  background-color: #3e8e41;
+  box-shadow: 0 2px #666;
+  transform: translateY(4px);
+}
+
+#lbl-category{
+  text-align:center;
+  position: fixed;
+  left: 50%;
+  top:20%;
+  transform: translate(-50%, 0);
+  color: white;
+  font-size: 30;
+}
+
+#btn-detection{
+    width: 200px;
+    background-color: black;
+    color: white;
+    font-size: 16px;
+    border-radius: 30px;
+    border: none;
+    padding: 15px 20px;
+    text-align: center;
+    box-shadow: 0 5px 10px 0 rgba(0,0,0,0.2);
+    position: fixed;
+    bottom: calc(50%);
+    left: calc(50% - 100px);
+    box-shadow: 0 5px #666;
+}
+
+#btn-ingestion{
+    width: 200px;
+    background-color: black;
+    color: white;
+    font-size: 16px;
+    border-radius: 30px;
+    border: none;
+    padding: 15px 20px;
+    text-align: center;
+    box-shadow: 0 5px 10px 0 rgba(0,0,0,0.2);
+    position: fixed;
+    bottom: calc(50% - 60px);
+    left: calc(50% - 100px);
+    box-shadow: 0 5px #666;
+}
+
+#btn-monitor{
+    width: 200px;
+    background-color: black;
+    color: white;
+    font-size: 16px;
+    border-radius: 30px;
+    border: none;
+    padding: 15px 20px;
+    text-align: center;
+    box-shadow: 0 5px 10px 0 rgba(0,0,0,0.2);
+    position: fixed;
+    bottom: calc(50% - 150px);
+    left: calc(50% - 100px);
+    box-shadow: 0 5px #666;
+}
+
+#camera--trigger{
+    width: 200px;
+    background-color: black;
+    color: white;
+    font-size: 16px;
+    border-radius: 30px;
+    border: none;
+    padding: 15px 20px;
+    text-align: center;
+    box-shadow: 0 5px 10px 0 rgba(0,0,0,0.2);
+    position: fixed;
+    bottom: 90px;
+    left: calc(50% - 100px);
+    box-shadow: 0 5px #666;
+}
+
+#product,#product-ok{
+    /*width: 200px;*/
+    /*background-color: black;*/
+    /*color: white;*/
+    font-size: 16px;
+    border-radius: 15px;
+    border: none;
+    padding: 5px 20px;
+    text-align: center;
+    /*box-shadow: 0 5px 10px 0 rgba(0,0,0,0.2);*/
+    /*position: fixed;*/
+    /*bottom: 90px;*/
+    /*left: calc(50% - 100px);*/
+    /*box-shadow: 0 5px #666;*/
+}
+
+
+/*#btn-send{
+    width: 200px;
+    background-color: black;
+    color: white;
+    font-size: 16px;
+    border-radius: 30px;
+    border: none;
+    padding: 15px 20px;
+    text-align: center;
+    box-shadow: 0 5px 10px 0 rgba(0,0,0,0.2);
+    position: fixed;
+    bottom: 90px;
+    left: calc(10% - 100px);
+    box-shadow: 0 5px #666;
+}*/
+
+#camera--trigger:active, #btn-send:active {
+  background-color: #3e8e41;
+  box-shadow: 0 2px #666;
+  transform: translateY(4px);
+}
+
+#device--trigger,#btn-send{
+    width: 200px;
+    background-color: black;
+    color: white;
+    font-size: 16px;
+    border-radius: 30px;
+    border: none;
+    padding: 15px 20px;
+    text-align: center;
+    box-shadow: 0 5px 10px 0 rgba(0,0,0,0.2);
+    position: fixed;
+    bottom: 30px;
+    left: calc(50% - 100px);
+    box-shadow: 0 5px #666;
+}
+
+#device--trigger:active {
+  background-color: #3e8e41;
+  box-shadow: 0 2px #666;
+  transform: translateY(4px);
+}
+
+#protocol--http{
+    width: 150px;
+    background-color: black;
+    color: white;
+    font-size: 16px;
+    border-radius: 30px;
+    border: none;
+    padding: 15px 20px;
+    text-align: center;
+    box-shadow: 0 5px 10px 0 rgba(0,0,0,0.2);
+    position: fixed;
+    top: 75px;
+    right: 150px;
+    box-shadow: 0 5px #666;
+}
+
+#protocol--http:active {
+  background-color: #3e8e41;
+  box-shadow: 0 2px #666;
+  transform: translateY(4px);
+}
+
+#protocol--mqtt{
+    width: 150px;
+    background-color: black;
+    color: white;
+    font-size: 16px;
+    border-radius: 30px;
+    border: none;
+    padding: 15px 20px;
+    text-align: center;
+    box-shadow: 0 5px 10px 0 rgba(0,0,0,0.2);
+    position: fixed;
+    top: 15px;
+    right: 150px;
+    box-shadow: 0 5px #666;
+}
+
+#protocol--mqtt:active {
+  background-color: #3e8e41;
+  box-shadow: 0 2px #666;
+  transform: translateY(4px);
+}
+
+#protocol--mqtt:disabled{
+  border: 1px solid #999999;
+  background-color: #cccccc;
+  color: #666666;
+  pointer-events: none;
+}
+
+#message--banner{
+    width: 150px;
+    /* background-color: black;
+    color: white; */
+    background-color: white;
+    color: black;
+    font-size: 16px;
+    border-radius: 30px;
+    border: none;
+    padding: 15px 20px;
+    text-align: center;
+    box-shadow: 0 5px 10px 0 rgba(0,0,0,0.2);
+    position: fixed;
+    /* top: 80px; */
+    top: 30%;
+    /* right: 50%; */
+    /* right: 150px; */
+    left: calc(50% - 100px);
+    opacity:0;
+}
+
+ #product-picker {
+/*        margin-bottom: 10px;
+        margin-top: 10px;
+        font-family: cursive, sans-serif;
+        outline: 0;
+        background: #2ecc71;
+        color: #fff;
+        border: 1px solid crimson;
+        padding: 4px;
+        border-radius: 9px;*/
+
+    width: 200px;
+    background-color: black;
+    color: white;
+    font-size: 16px;
+    border-radius: 10px;
+    border: none;
+    padding: 15px 20px;
+    text-align: center;
+    box-shadow: 0 5px 10px 0 rgba(0,0,0,0.2);
+    position: fixed;
+    /*bottom: 300px;*/
+    bottom: calc(50%);
+    left: calc(50% - 120px);
+    box-shadow: 0 5px #666;
+
+    /*opacity:0.5;*/
+
+
+      }
+
+
+.taken{
+    height: 100px!important;
+    width: 100px!important;
+    transition: all 0.5s ease-in;
+    border: solid 3px white;
+    box-shadow: 0 5px 10px 0 rgba(0,0,0,0.2);
+    top: 20px;
+    right: 20px;
+    z-index: 2;
+}
+
+
+/* In order to fade an HTML element out, then paste the following code in your CSS block: */
+
+.fade-out {
+  animation: fadeOut ease 8s;
+  -webkit-animation: fadeOut ease 8s;
+  -moz-animation: fadeOut ease 8s;
+  -o-animation: fadeOut ease 8s;
+  -ms-animation: fadeOut ease 8s;
+}
+@keyframes fadeOut {
+  0% {
+    opacity:1;
+  }
+  100% {
+    opacity:0;
+  }
+}
+
+@-moz-keyframes fadeOut {
+  0% {
+    opacity:1;
+  }
+  100% {
+    opacity:0;
+  }
+}
+
+@-webkit-keyframes fadeOut {
+  0% {
+    opacity:1;
+  }
+  100% {
+    opacity:0;
+  }
+}
+
+@-o-keyframes fadeOut {
+  0% {
+    opacity:1;
+  }
+  100% {
+    opacity:0;
+  }
+}
+
+@-ms-keyframes fadeOut {
+  0% {
+    opacity:1;
+  }
+  100% {
+    opacity:0;
+}
+}
+
+.fade-in {
+    animation: fadeIn ease 10s;
+    -webkit-animation: fadeIn ease 10s;
+    -moz-animation: fadeIn ease 10s;
+    -o-animation: fadeIn ease 10s;
+    -ms-animation: fadeIn ease 10s;
+  }
+  @keyframes fadeIn {
+    0% {
+      opacity:0;
+    }
+    100% {
+      opacity:1;
+    }
+  }
+  
+  @-moz-keyframes fadeIn {
+    0% {
+      opacity:0;
+    }
+    100% {
+      opacity:1;
+    }
+  }
+  
+  @-webkit-keyframes fadeIn {
+    0% {
+      opacity:0;
+    }
+    100% {
+      opacity:1;
+    }
+  }
+  
+  @-o-keyframes fadeIn {
+    0% {
+      opacity:0;
+    }
+    100% {
+      opacity:1;
+    }
+  }
+  
+  @-ms-keyframes fadeIn {
+    0% {
+      opacity:0;
+    }
+    100% {
+      opacity:1;
+  }
+}

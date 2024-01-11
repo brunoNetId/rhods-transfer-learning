@@ -1,0 +1,28 @@
+[
+    {
+      "item": "tea-earl-grey",
+      "label": "Earl Grey Tea",
+      "price": 3.99
+    },
+    {
+      "item": "tea-green",
+      "label": "Green Tea",
+      "price": 2.99
+    },
+    {
+      "item": "tea-lemon",
+      "label": "Lemon Tea",
+      "price": 4.99
+    },
+    {
+      "item": "tea-licorice",
+      "label": "Licorice Tea",
+      "price": 2.49
+    },
+    {
+      "item": "other",
+      "label": "Other",
+      "price": "N/A"
+    }
+]
+  

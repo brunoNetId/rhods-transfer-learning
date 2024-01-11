@@ -1,0 +1,648 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- camel-k: language=xml -->
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://camel.apache.org/schema/spring"
+        xsi:schemaLocation="
+            http://camel.apache.org/schema/spring
+            https://camel.apache.org/schema/spring/camel-spring.xsd">
+
+
+    <!-- MQTT entry point -->
+    <route id="mqtt-consumer">
+        <from uri="{{mqtt.uri}}"/>
+        <log message="got MQTT image from: ${header.CamelMqttTopic}"/>
+
+        <setProperty name="topic-response">
+            <simple>response/${header.CamelMqttTopic}</simple>
+        </setProperty>
+        <log message="MQTT client: ${exchangeProperty.mqtt-client}"/>
+
+        <setProperty name="job-origin">
+            <constant>"origin":"mqtt"</constant>
+        </setProperty>
+
+        <to uri="direct:main"/>
+    </route>
+
+    <!-- Binary (HTTP) entry point -->
+    <route id="binary">
+        <from uri="platform-http:/binary"/>
+        <log message="incoming BINARY payload"/>
+
+
+        <setProperty name="job-origin">
+            <constant>"origin":"http"</constant>
+        </setProperty>
+
+        <marshal>
+            <base64 lineLength="1"/>
+        </marshal>
+
+        <setBody>
+            <simple>{"image": "${body}"}</simple>
+        </setBody>
+
+        <to uri="direct:main"/>
+        <!-- <convertBodyTo type="String"/> -->
+    </route>
+    
+    <!-- JSON (HTTP) entry point -->
+    <route id="http-consumer">
+        <from uri="platform-http:/detection"/>
+        <log message="incoming HTTP request, size: ${body.length}"/>
+        <setProperty name="job-origin">
+            <constant>"origin":"http"</constant>
+        </setProperty>
+        <to uri="direct:main"/>
+        <to uri="direct:prepare-response"/>
+    </route>
+    
+    <!-- JSON (HTTP) entry point -->
+    <route id="http-consumer-ingest">
+        <from uri="platform-http:/ingestion"/>
+
+        <setProperty name="json-img">
+            <simple>${body}</simple>
+        </setProperty>
+        <setProperty name="job-name">
+            <simple>"name":"ingestion"</simple>
+        </setProperty>
+
+        <unmarshal>
+            <json/>
+        </unmarshal>
+        <log message="incoming HTTP request for INGESTION: ${body[product]}"/>       
+        <setProperty name="job-origin">
+            <constant>"origin":"http"</constant>
+        </setProperty>
+        <setProperty name="job-valid">
+            <constant>"valid":true</constant>
+        </setProperty>
+
+
+                <removeHeaders pattern="*"/>
+                <setBody>
+                    <simple>{"product":"${body[product]}"}</simple>
+                </setBody>
+                <to uri="{{endpoint.price.host}}/item"/>
+                <unmarshal>
+                    <json/>
+                </unmarshal>
+                <setProperty name="product">
+                    <simple>${body[item]}</simple>
+                </setProperty>
+                <setProperty name="job-item">
+                    <simple>"item":"${body[item]}"</simple>
+                </setProperty>
+
+        <!-- Find item for product -->
+<!--         <setHeader name="product">
+            <simple>${body[product]}</simple>
+        </setHeader>
+        <to uri="language:constant:resource:classpath:trainable.json"/>
+        <setBody>
+            <jq>.[] | select(.label == header("product")).item</jq>
+        </setBody>
+        <setProperty name="product">
+            <simple>${body}</simple>
+        </setProperty>
+        <setProperty name="job-item">
+            <simple>"item":"${body}"</simple>
+        </setProperty> -->
+
+        <setProperty name="job-price">
+            <simple>"price":"n/a"</simple>
+        </setProperty>
+
+        <setProperty name="mqtt-message">
+            <simple>
+            {
+                ${exchangeProperty.job-origin},
+                ${exchangeProperty.job-valid},
+                ${exchangeProperty.job-item},
+                ${exchangeProperty.job-price},
+                ${exchangeProperty.job-name}
+            }
+            </simple>
+        </setProperty>
+        <wireTap uri="direct:mqtt-publish"/>
+
+        <setProperty name="bucket">
+            <!-- <constant>train</constant> -->
+            <constant>data</constant>
+        </setProperty>
+        <to uri="direct:store-image"/>
+
+        <!-- <to uri="direct:main"/> -->
+        <to uri="direct:prepare-response-ingestion"/>
+    </route>
+
+    <!-- JSON (HTTP) entry point -->
+    <route id="http-consumer-ingest-options">
+        <from uri="platform-http:/ingestion/options"/>
+
+        <log message="incoming HTTP request for INGESTION OPTIONS"/>       
+        <setProperty name="job-origin">
+            <constant>"origin":"http"</constant>
+        </setProperty>
+
+        <!-- <to uri="direct:main"/> -->
+        <to uri="direct:prepare-response-ingestion-options"/>
+    </route>
+    <!-- MAIN PROCESSOR -->
+    <route id="main">
+        <from uri="direct:main"/>
+        <setProperty name="job-name">
+            <simple>"name":"detection"</simple>
+        </setProperty>
+        <to uri="direct:call"/>
+        <to uri="direct:evaluate-detection"/>
+        <to uri="direct:price"/>
+        <setProperty name="mqtt-message">
+            <simple>
+            {
+                ${exchangeProperty.job-origin},
+                ${exchangeProperty.job-valid},
+                ${exchangeProperty.job-item},
+                ${exchangeProperty.job-price},
+                ${exchangeProperty.job-name}
+            }
+            </simple>
+        </setProperty>
+        <wireTap uri="direct:mqtt-publish"/>
+        <to uri="direct:store-image"/>
+    </route>
+
+    <!-- TEST HTTP RESPONSE -->
+    <route id="prepare-response">
+        <from uri="direct:prepare-response"/>
+        <setHeader name="Access-Control-Allow-Origin">
+            <constant>*</constant>
+        </setHeader>
+        <setHeader name="Content-Type">
+            <!-- <constant>text</constant> -->
+            <constant>application/json</constant>
+        </setHeader>
+        <setBody>
+            <simple>${exchangeProperty.products}</simple>
+        </setBody>
+
+        <marshal>
+            <json/>
+        </marshal>
+
+        <setBody>
+            <!-- <simple>Hello from Camel</simple> -->
+            <!-- <simple>${exchangeProperty.pricetag}</simple> -->
+            <simple>
+                {
+                    "known":"${exchangeProperty.known}",
+                    "pricetag":"${exchangeProperty.pricetag}",
+                    "products":${body} 
+                }
+            </simple>
+        </setBody>
+        <log message="${body}"/>
+    </route>
+
+
+    <!-- TEST HTTP RESPONSE -->
+    <route id="prepare-response-ingestion">
+        <from uri="direct:prepare-response-ingestion"/>
+        <removeHeaders pattern="*"/>
+        <setHeader name="Access-Control-Allow-Origin">
+            <constant>*</constant>
+        </setHeader>
+        <setHeader name="Content-Type">
+            <!-- <constant>text</constant> -->
+            <constant>application/json</constant>
+        </setHeader>
+        <setBody>
+            <simple>{"status":"done"}</simple>
+        </setBody>
+    </route>
+
+    <!-- TEST HTTP RESPONSE -->
+    <route id="prepare-response-ingestion-options">
+        <from uri="direct:prepare-response-ingestion-options"/>
+        <removeHeaders pattern="*"/>
+        <setHeader name="Access-Control-Allow-Origin">
+            <constant>*</constant>
+        </setHeader>
+        <setHeader name="Content-Type">
+            <!-- <constant>text</constant> -->
+            <constant>application/json</constant>
+        </setHeader>
+
+        <to uri="language:constant:resource:classpath:trainable.json"/>
+        <setBody>
+
+            <!-- <jsonpath>$[?(@.item == '${header.item}')].price</jsonpath> -->
+            <!-- <jq>.[] | select(.label!="Unknown product").label</jq> -->
+            <jq>.[].label</jq>
+        </setBody>
+        <marshal>
+            <json/>
+        </marshal>
+        <choice>
+            <when>
+                <simple>${body} startsWith "["</simple>
+                <setBody>
+                    <simple>{"products":${body}}</simple>
+                </setBody>
+            </when>
+            <otherwise>
+                <setBody>
+                    <simple>{"products":[${body}]}</simple>
+                </setBody>
+            </otherwise>
+        </choice>
+    </route>
+
+    <route id="call">
+        <from uri="direct:call"/>
+
+        <removeHeaders pattern="*"/>
+
+        <setProperty name="json-img">
+            <simple>${body}</simple>
+        </setProperty>
+
+        <unmarshal>
+            <json/>
+        </unmarshal>
+
+        <setBody>
+            <simple>{"instances":[{"b64": "${body[image]}"}]}</simple>
+        </setBody>
+
+<!--         <log message="inference request is:"/>
+        <log message="${body}"/> -->
+
+        <choice>
+            <when>
+                <simple>{{backend.simulator}}</simple>
+                <setBody>
+                    <!-- <simple>{"predictions": ["tea-green", "0.619861"]}</simple> -->
+                    <simple>{"predictions": ["other", "0.619861"]}</simple>
+                </setBody>
+            </when>
+            <otherwise>
+                <!-- <to uri="{{endpoint.detections.host}}/predictions"/> -->
+                <to uri="{{endpoint.detections.host}}/v1/models/tea_model_b64:predict"/>
+            </otherwise>
+        </choice>
+
+        <log message="${body}"/>
+    </route>
+
+
+    <route id="evaluate-detection">
+        <from uri="direct:evaluate-detection"/>
+
+<convertBodyTo type="String"/>
+<unmarshal>
+    <json/>
+</unmarshal>
+
+<log message="t1 ${body}"/>
+<log message="t2 ${body[predictions][0]}"/>
+<log message="t3 ${body[predictions][1]}"/>
+<!-- <log message="t3 ${body[1]}"/> -->
+<!-- <stop/> -->
+
+        <!-- <setBody> -->
+            <!-- <jsonpath>$.detections[?(@.score>{{score.accuracy}})].label</jsonpath> -->
+            <!-- <jsonpath>$.predictions[1]</jsonpath> -->
+        <!-- </setBody> -->
+
+<!--         <log message="accuracy: {{score.accuracy}}"/>
+        <log message="result detection: ${body}"/> -->
+        <log message="accuracy: {{score.accuracy}}"/>
+        <log message="result detection: ${body[predictions][0]}"/>
+
+        <setProperty name="product">
+            <simple>${body[predictions][0]}</simple>
+        </setProperty>
+
+        <choice>
+            <when>
+                <simple>${body[predictions][0]} != 'other'</simple>
+                <log message="OK"/>
+                <setProperty name="job-valid">
+                    <constant>"valid":true</constant>
+                </setProperty>
+                <setProperty name="bucket">
+                    <constant>valid</constant>
+                </setProperty>
+            </when>
+            <otherwise>
+                <log message="FAILED"/>
+                <setProperty name="job-valid">
+                    <constant>"valid":false</constant>
+                </setProperty>
+                <setProperty name="bucket">
+                    <constant>unclassified</constant>
+                </setProperty>
+            </otherwise>
+        </choice>
+
+        <log message="Detected: ${body[predictions][1]}"/>
+    </route>
+
+    <!-- Store in S3 -->
+    <route id="store-image">
+        <from uri="direct:store-image"/>
+
+        <setBody>
+            <simple>${exchangeProperty.json-img}</simple>
+        </setBody>
+        <setBody>
+            <jsonpath>$.image</jsonpath>
+        </setBody>
+        <unmarshal>
+            <base64/>
+        </unmarshal>
+
+        <!-- File name for testing purposes -->
+        <setHeader name="CamelFileName">
+            <!-- <simple>${date:now:yyyy-MM-dd_HH-mm-ssZ}.jpeg</simple> -->
+            <simple>${date:now:yyyy-MM-dd_HH-mm-ss-SSS}.jpg</simple>
+        </setHeader>
+
+        <setHeader name="CamelAwsS3Key">
+            <simple>images/${exchangeProperty.product}/${date:now:yyyy-MM-dd_HH-mm-ss-SSS}.jpg</simple>
+        </setHeader>
+    
+        <setHeader name="CamelAwsS3ContentType">
+            <simple>image/jpeg</simple>
+        </setHeader>
+
+        <log message="file key: ${header.CamelAwsS3Key}"/>
+
+        <toD uri="{{camel.uri.s3}}"/>
+        <log message="file stored: ${header.CamelAwsS3Key}"/>
+    </route>
+
+
+    <!-- Price simulator -->
+    <route id="price">
+        <from uri="direct:price"/>
+
+        <choice>
+            <when>
+                <!-- Allways call price engine (helps obtaining list of available products) -->
+                <constant>true</constant>
+                <!-- <simple>${body[predictions][0]} != 'other'</simple> -->
+
+                <!-- keep item found -->
+                <setProperty name="article">
+                    <simple>${body[predictions][0]}</simple>
+                </setProperty>
+
+                <removeHeaders pattern="*"/>
+                <setHeader name="item">
+                    <simple>${body[predictions][0]}</simple>
+                </setHeader>
+                <setBody>
+                    <constant></constant>
+                </setBody>
+                <to uri="{{endpoint.price.host}}/price"/>
+
+                <!-- <setBody>
+                    <simple>[{"item":"Simulation", "price":10},{"item":"Human face", "price":20}, {"item":"Airplane", "price":3000000}]</simple>
+                </setBody>
+
+                <setBody>
+                    <jsonpath>$[?(@.item == '${exchangeProperty.item}')].price</jsonpath>
+                </setBody> -->
+            </when>
+            <otherwise>
+                <setBody>
+                    <simple>not found</simple>
+                </setBody>
+                <setProperty name="article">
+                    <simple>article not found</simple>
+                </setProperty>
+            </otherwise>
+        </choice>
+
+        <log message="price response: ${body}"/>
+        <log message="price response: ${body}"/>
+
+        <unmarshal>
+            <json/>
+        </unmarshal>
+
+        <log message="price: ${body[price]}"/>
+
+        <setProperty name="known">
+            <simple resultType="Boolean">${body[item]} != 'other'</simple>
+        </setProperty>
+        <log message="known: ${exchangeProperty.known}"/>
+
+        <setProperty name="products">
+            <simple>${body[products]}</simple>
+        </setProperty>
+        <log message="products: ${exchangeProperty.products}"/>
+
+        <setProperty name="article">
+            <simple>${body[label]}</simple>
+        </setProperty>
+        <setProperty name="pricetag">
+            <!-- <simple>${exchangeProperty.article}: ${body}</simple> -->
+            <simple>${exchangeProperty.article}: ${body[price]}</simple>
+        </setProperty>
+
+        <setProperty name="job-item">
+            <simple>"item":"${exchangeProperty.article}"</simple>
+        </setProperty>
+
+        <setProperty name="job-price">
+            <!-- Double dollar: 1st currency, 2nd obtain variable's value  -->
+            <simple>"price":"$${body[price]}"</simple>
+        </setProperty>
+    </route>
+
+
+	<!-- Write your routes here, for example: -->
+    <!-- <route id="monitor">
+        <from uri="timer:monitor"/>
+        <setBody>
+            <simple>Hello Camel from ${routeId}</simple>
+        </setBody>
+        <log message="sending monitor MQTT message"/>
+        <to uri="{{mqtt.uri.monitor}}"/>
+    </route> -->
+
+<!--     <route>
+        <from uri="direct:mqtt-publish"/>
+        <log message="dummy mqtt-publish"/>
+    </route> -->
+
+    <route>
+        <from uri="direct:mqtt-publish"/>
+
+        <setBody>
+            <simple>${exchangeProperty.mqtt-message}</simple>
+        </setBody>
+
+        <log message="sending monitor MQTT message: ${body}"/>
+        <to uri="{{mqtt.uri.monitor}}"/>
+
+        <!-- if client is MQTT we respond back -->
+        <when>
+            <simple>${exchangeProperty.topic-response} != null</simple>
+     
+            <to uri="direct:prepare-response"/>
+
+            <setHeader name="CamelPahoOverrideTopic">
+                <simple>${exchangeProperty.topic-response}</simple>
+            </setHeader>
+            <log message="sending MQTT response to: {exchangeProperty.topic-response}"/>
+            <to uri="{{mqtt.uri.monitor}}"/>
+        </when>
+    </route>
+
+
+    <route id="zip-service">
+        <from uri="platform-http:/zip"/>
+
+        <to uri="{{camel.uri.direct.datasource}}"/>
+    </route>
+
+
+    <route id="zip-service-read-s3">
+        <from uri="direct:zip-service-read-s3"/>
+
+        <!-- Allows running locally without S3 connectivity errors -->
+        <!-- <setProperty name="datasource">
+            <simple>aws2-s3</simple>
+        </setProperty> -->
+        <toD uri="{{ds:aws2-s3}}:data?operation=listObjects"/>
+        <!-- <to uri="aws2-s3:data?operation=listObjects"/> -->
+
+        <split>
+            <simple>${body}</simple>
+            <log message="objects: ${body.key}"/>
+
+            <setProperty name="s3entry">
+                <simple>${body.key}</simple>
+            </setProperty>
+
+            <log message="s3 file: ${header.CamelFileName}"/>
+
+            <pollEnrich>
+                <simple>aws2-s3:data?operation=getObject&amp;deleteAfterRead=false&amp;fileName=${body.key}</simple>
+            </pollEnrich>
+            <setProperty name="mqtt-message">
+                <simple>{"name":"zipdata"}</simple>
+            </setProperty>
+            <wireTap uri="direct:mqtt-publish"/>
+
+            <removeHeaders pattern="*"/>
+
+            <setHeader name="CamelFileName">
+                <simple>${exchangeProperty.s3entry}</simple>
+            </setHeader>
+            <log message="s3 file: ${header.CamelFileName}"/>
+
+            <to uri="direct:zip-aggregator"/>
+        </split>
+
+        <setBody>
+            <simple>{"status":"done"}</simple>
+        </setBody>
+    </route>
+
+
+    <route id="zip-service-read-filesystem">
+        <from uri="direct:zip-service-read-filesystem"/>
+
+        <to uri="exec:find?workingDir=target/s3-data&amp;useStderrOnEmptyStdout=true&amp;args=. -type f"/>
+
+        <to uri="log:debug?showAll=true"/>
+
+        <split>
+            <tokenize token="\n"/>
+            <log message="file: [${body}]"/>
+            <!-- <log message="file: [${body.split('/')[last]}]"/> -->
+            <pollEnrich>
+                <simple>file:target/s3-data?recursive=true&amp;noop=true&amp;idempotent=false&amp;antInclude=**/${body.split('/')[last]}</simple>
+            </pollEnrich>
+            <setProperty name="mqtt-message">
+                <simple>{"name":"zipdata"}</simple>
+            </setProperty>
+            <wireTap uri="direct:mqtt-publish"/>
+            <to uri="direct:zip-aggregator"/>
+        </split>
+
+        <setBody>
+            <simple>{"status":"done"}</simple>
+        </setBody>
+    </route>
+
+
+
+    <route id="zip-aggregator">
+      <from uri="direct:zip-aggregator"/>
+
+      <log message="aggregating: ${header.CamelSplitIndex}"/>
+      <log message="complete: ${header.CamelSplitComplete}"/>
+
+      <log message="aggregating: ${header.CamelFileName}"/>
+
+      <!-- <to uri="log:agg?showAll=true"/> -->
+
+      <aggregate
+        completionTimeout="1000"
+        aggregationStrategy="#class:org.apache.camel.processor.aggregate.zipfile.ZipAggregationStrategy(true,true)">
+        <correlationExpression>
+            <constant>true</constant>
+        </correlationExpression>
+        <completionPredicate>
+             <simple>${header.CamelSplitComplete} == "true"</simple>
+        </completionPredicate>
+        <log message="done !!"/>
+        <!-- <to uri="file:target/zip"/> -->
+
+            <setProperty name="mqtt-message">
+                <simple>{"name":"zipsend"}</simple>
+            </setProperty>
+            <wireTap uri="direct:mqtt-publish"/>
+
+        <to uri="{{camel.uri.central}}"/>
+        <!-- <to uri="http://feeder-edge1.apps.cluster-958kv.sandbox1500.opentlc.com/zip"/> -->
+
+      </aggregate>
+
+
+<!--       <aggregate
+        completionFromBatchConsumer="true"
+        aggregationStrategy="#class:org.apache.camel.processor.aggregate.zipfile.ZipAggregationStrategy(true)">
+        <correlationExpression>
+            <constant>true</constant>
+        </correlationExpression>
+        <to uri="file:target/zip"/>
+      </aggregate> -->
+<!--         <marshal>
+            <zipFile/>
+        </marshal>
+ -->    
+    </route>
+
+
+    <route id="simulate-unzip-service">
+        <from uri="platform-http:/simulate/unzip"/>
+
+            <setProperty name="mqtt-message">
+                <simple>{"name":"zipfile"}</simple>
+            </setProperty>
+            <wireTap uri="direct:mqtt-publish"/>
+    </route>
+
+
+
+
+</routes>
