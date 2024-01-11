@@ -204,12 +204,36 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
    1. Create a new *OpenShift* project `edge1`.
    2. Deploy a *Minio* instance in the `edge1` namespace using the following YAML resource:
       * **deployment/edge/minio.yaml**
-   1. In the new *Minio* instance create a bucket called `production`.
-   1. Deploy the *Edge Manager*. \
-      Follow instructions under:
-      * **camel/edge-manager/Readme.txt** 
-      
-      The *Edge Manager* moves available models from the `edge1-ready` (central) to `production` (edge1).
+   1. In the new *Minio* instance create the following buckets:
+      * **production** (live AI/ML models)
+      * **data** (training data)
+      * **valid** (data from valid inferences)
+      * **unclassified** (data from invalid inferences)
+
+    1. Deploy an *AMQ Broker*
+       
+       AMQ is used to enable MQTT connectivity with edge devices and manage monitoring events.
+
+       1. Install the AMQ Broker Operator:
+          * AMQ Broker for RHEL 8 (Multiarch)
+
+          Install in `edge1` namespace (specific) \
+          **NOT cluster wide**
+       1. Create a new ***ActiveMQ Artemis*** (amq broker instance) \
+       Use the YAML defined under:
+          * **deployment/edge/amq-broker.yaml**
+        
+       1. Create a route to enable external MQTT communication
+            ```
+            oc create route edge broker-amq-mqtt --service broker-amq-mqtt-0-svc
+            ```
+
+1. Deploy the *Edge Manager*. \
+   Deploy in the new `edge1` namespace. \
+   Follow instructions under:
+    * **camel/edge-manager/Readme.txt** 
+    
+    The *Edge Manager* moves available models from the `edge1-ready` (central) to `production` (edge1).
 
 
 1. Deploy the TensorFlow server.
@@ -371,43 +395,58 @@ Procedure:
 
 
 <br/>
-<br/>
 
-### Pending deployment steps
+### Deploy the AI-powered (intelligent) App
 
-Cluster wide installation:
+The App connects edge devices to the platform and integrates with the various systems. \
+It includes an interface capable of:
+* Get price tags for products (inferencing)
+* Send training data (data ingesting)
+* Monitoring platform activity  
 
-* Install Camel K Operator
+
+#### Install dependencies
+
+Some components are Camel K based.
+
+* Install Camel K Operator (cluster-wide)
   * Red Hat Integration - Camel K \
     1.10.5 provided by Red Hat
 
-<br>
+#### Install systems
 
-Edge1 namespace:
+Under the `edge1` namespace, perform the following actions:
 
-* Install AMQ Broker Operator:
-  * Red Hat Integration - AMQ Broker for RHEL 8 (Multiarch)
-7.11.4-opr-1 provided by Red Hat
+1. Deploy the Price Engine (Catalogue).
+   
+   The price engine is based on Camel K. \
+   From the folder:
+    * **camel/edge-shopper/camel-price**
 
-* Create a route for external MQTT connectivity
-    ```
-    kamel run price-engine.xml \
-    --resource file:catalogue.json
-    ```
-* Deploy AMQ Broker to enable MQTT communication
-    ```
-    oc create route edge broker-amq-mqtt --service broker-amq-mqtt-0-svc
-    ```
-* Deploy **edbe-monitor** Camel system
-* Deploy Price engine (Camel K)
+   Run the `kamel` cli command: \
+   (make sure you're working on the `edge1` namespace) 
     ```
     kamel run price-engine.xml \
     --resource file:catalogue.json
     ```
 
-* Deploy Shopper App
+1. Deploy the *Edge Monitor*. \
+   Deploy it in the new `edge1` namespace. \
+   Follow instructions under:
+    * **camel/edge-monitor/Readme.txt** 
+    
+    The *Edge Monitor* bridges monitoring events from Kafka to MQTT.
 
-* Create Route for external connectivity:
+
+1. Deploy the *Edge Shopper* (Intelligent App). \
+   Deploy it in the new `edge1` namespace. \
+   Follow instructions under:
+    * **camel/edge-shopper/Readme.txt** 
+    
+    The *Edge Shopper* allows for inferencing/data-acquisition/monitoring from a web-based app the user can operate.
+
+1. Create a route to enable external connectivity:
     ```
     oc create route edge camel-edge --service shopper
     ```
+   Use the route URL to connect from a browser.

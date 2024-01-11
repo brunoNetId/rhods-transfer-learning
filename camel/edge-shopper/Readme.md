@@ -4,34 +4,19 @@ This Camel Quarkus component integrates, MQTT and HTTP clients (such as IoT devi
 
 You'll need:
 
- - the REST AI/ML engine
+ - the ML Model Server (TensorFlow Server)
  - the REST Price engine (Camel K)
  - an AMQ Broker (local or remote)
+ - an AMQ Streams cluster
  - Camel K Operator
- - S3 storage provided by OpenShift Data Foundation
+ - S3 storage
  
 <br>
 
-### Deploy the AI/ML engine:
+### Deploy the AI/ML model server:
 
-Follow instructions from this tutorial link:
-- https://redhat-scholars.github.io/rhods-od-workshop/rhods-od-workshop/2-01-deploy-s2i.html#_openshift_console
+Follow the main instructions (main project README)
 
-	Validate the deployment with:
-
-	(Mac)
-    ```
-    MY_IMAGE=./images/small-dog.jpeg && \
-    MY_ROUTE=http://localhost:8080 && \
-    (echo -n '{"image": "'; base64 -i $MY_IMAGE; echo '"}') | curl -X POST -H "Content-Type: application/json" -d @- ${MY_ROUTE}/detection
-    ```
-
-
-	```
-	MY_IMAGE=./images/numberplate2.jpeg && \
-	MY_ROUTE=https://YOUR_ROUTE_URL/ && \
-	(echo -n '{"image": "'; base64 $MY_IMAGE; echo '"}') | curl -X POST -H "Content-Type: application/json" -d @- ${MY_ROUTE}/predictions
-	```
 
 <br>
 
@@ -90,7 +75,7 @@ You can test using the following cURL command:
 ```
 curl \
 -H "item: Apple" \
-http://price-engine-demo.apps.cluster-lv7nl.lv7nl.sandbox257.opentlc.com/price
+http://price-engine-edge1.apps.cluster-lv7nl.lv7nl.sandbox257.opentlc.com/price
 ```
 
 <br>
@@ -98,8 +83,7 @@ http://price-engine-demo.apps.cluster-lv7nl.lv7nl.sandbox257.opentlc.com/price
 
 ### S3 Storage
 
-For now, you can use an RHPDS instance of the Camel Workshop that includes an S3 Storage solution with ODF. \
-Read the "Deployment" section below.
+You can use S3 storage based on Minio as per the main README instructions.
 
 <br>
 
@@ -141,11 +125,6 @@ curl -X POST -H "Content-Type: application/json" -d @- ${MY_ROUTE}/detection
 
 
 ### Configure your integration with S3
-
-Follow the same steps indicated in the Camel Workshop
-
-Step 7:
- - https://github.com/RedHat-Middleware-Workshops/workshop-camel3/blob/main/docs/labs/stage5/walkthrough.adoc#deploy-in-openshift
 
 Configure:
  - `src/main/resources/application.properties`
