@@ -66,9 +66,13 @@ camel run * --port 8090
 To deploy in OpenShift, run the following command:
 
 ```
-kamel run price-engine.xml \
---resource file:catalogue.json
+oc create cm catalogue --from-file=catalogue.json
 ```
+```
+kamel run price-engine.xml \
+--resource configmap:catalogue@/deployments/config
+```
+
 
 You can test using the following cURL command:
 

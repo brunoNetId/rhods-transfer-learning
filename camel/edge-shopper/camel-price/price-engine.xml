@@ -18,7 +18,9 @@
         <setHeader name="product">
             <simple>${body[product]}</simple>
         </setHeader>
-        <to uri="language:constant:resource:classpath:catalogue.json"/>
+        <!-- <to uri="language:constant:resource:classpath:catalogue.json"/> -->
+        <to uri="language:constant:resource:file:/deployments/config/catalogue.json"/>
+
         <setBody>
             <jq>.[] | select(.label == header("product")).item</jq>
         </setBody>
@@ -46,7 +48,9 @@
 	<!-- Write your routes here, for example: -->
     <route id="main">
         <from uri="platform-http:/price"/>
-        <to uri="language:constant:resource:classpath:catalogue.json"/>
+        <!-- <to uri="language:constant:resource:classpath:catalogue.json"/> -->
+        <to uri="language:constant:resource:file:/deployments/config/catalogue.json"/>
+        
         <setBody>
             <!-- <jsonpath>$[?(@.item == '${header.item}')].price</jsonpath> -->
             <jsonpath>$[?(@.item == '${header.item}')]</jsonpath>
@@ -83,7 +87,8 @@
 
     <route id="test">
         <from uri="timer:products?repeatCount=1"/>
-        <to uri="language:constant:resource:classpath:catalogue.json"/>
+        <!-- <to uri="language:constant:resource:classpath:catalogue.json"/> -->
+        <to uri="language:constant:resource:file:/deployments/config/catalogue.json"/>
         <setBody>
             <!-- <jsonpath>$[?(@.item == '${header.item}')].price</jsonpath> -->
             <jq>.[] | select(.label!="Unknown product").label</jq>
@@ -98,7 +103,9 @@
             <simple>${body}</simple>
         </setProperty>
 
-        <to uri="language:constant:resource:classpath:catalogue.json"/>
+        <!-- <to uri="language:constant:resource:classpath:catalogue.json"/> -->
+        <to uri="language:constant:resource:file:/deployments/config/catalogue.json"/>
+
         <setProperty name="products">
 
             <!-- <jsonpath>$[?(@.item == '${header.item}')].price</jsonpath> -->

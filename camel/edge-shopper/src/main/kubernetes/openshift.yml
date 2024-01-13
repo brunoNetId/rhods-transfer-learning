@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shopper-training-options
+data:
+  training-options.json: |
+    [
+      {
+        "item": "tea-licorice",
+        "label": "Licorice Tea"
+      }
+    ]
