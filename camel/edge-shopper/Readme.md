@@ -63,7 +63,7 @@ You can run locally with Camel JBang with the following command:
 camel run * --port 8090
 ```
 
-To deploy in OpenShift, run the following command:
+To deploy in OpenShift, run the following commands:
 
 ```
 oc create cm catalogue --from-file=catalogue.json

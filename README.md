@@ -423,11 +423,16 @@ Under the `edge1` namespace, perform the following actions:
    From the folder:
     * **camel/edge-shopper/camel-price**
 
-   Run the `kamel` cli command: \
+   First, create a *ConfigMap* containing the catalogue: \
    (make sure you're working on the `edge1` namespace) 
+   ```
+   oc create cm catalogue --from-file=catalogue.json
+   ```
+
+   Then, run the `kamel` cli command:
     ```
     kamel run price-engine.xml \
-    --resource file:catalogue.json
+    --resource configmap:catalogue@/deployments/config
     ```
 
 1. Deploy the *Edge Monitor*. \
