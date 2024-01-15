@@ -76,4 +76,4 @@ curl -v -T data.zip http://localhost:8080/zip?edgeId=edge1
 
 (openshift)
 ROUTE=$(oc get routes -o jsonpath={.items[?(@.metadata.name==\'feeder\')].spec.host}) && \
-curl -v -T data.zip http://$ROUTE/zip
+curl -v -T data.zip http://$ROUTE/zip?edgeId=edge1

@@ -185,7 +185,7 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
      * dataset/images \
        (wait for all images to be fully uploaded)
    * **Automatically**: Use the Camel server provided in the repository to push training data to S3. Follow the instructions under:
-     * camel/edge-feeder/Readme.txt
+     * camel/central-feeder/Readme.txt
 
 1. Train the model.
 
@@ -328,7 +328,7 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
 
 ### Deploy the data ingestion system
 
-A *Camel* service deployed on the edge will be ready listening for requests to ingest training data.
+A *Camel* service deployed on *Central* will be ready listening for requests to ingest training data.
 
 Upon receiving data ingestion requests, Camel will:
 * Unpack the data and push it to central S3 storage.
@@ -336,14 +336,14 @@ Upon receiving data ingestion requests, Camel will:
 
 <br/>
 
-1. Deploy the *Edge Feeder*
+1. Deploy the *Feeder*
 
     To deploy the system on *OpenShift*, follow instructions under:
-    * **camel/edge-feeder/Readme.txt**
+    * **camel/central-feeder/Readme.txt**
 
     Check in your environment *Camel* has started and is in healthy state.
 
-1. Make sure you have exposed its service by executing the command below:
+1. (for testing purposes) Expose its service by executing the command below:
 
    ```bash
    oc expose service feeder
@@ -374,11 +374,11 @@ Procedure:
 
 1. Push training data
 
-   Under your `edge-feeder` project, execute in your terminal the following `curl` command:
+   From the `central-feeder` project, execute in your terminal the following `curl` command:
 
    ```
    ROUTE=$(oc get routes -o jsonpath={.items[?(@.metadata.name==\'feeder\')].spec.host}) && \
-   curl -v -T data.zip http://$ROUTE/zip
+   curl -v -T data.zip http://$ROUTE/zip?edgeId=edge1
    ```
 1. When the upload completes you should see a new pipeline execution has started.
 
