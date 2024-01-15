@@ -529,6 +529,42 @@
             <simple>${body}</simple>
             <log message="objects: ${body.key}"/>
 
+            <wireTap uri="direct:process-S3-file"/>
+
+<!-- 
+            <setProperty name="s3entry">
+                <simple>${body.key}</simple>
+            </setProperty>
+
+            <log message="s3 file: ${header.CamelFileName}"/>
+
+            <pollEnrich>
+                <simple>aws2-s3:data?operation=getObject&amp;deleteAfterRead=false&amp;fileName=${body.key}</simple>
+            </pollEnrich>
+            <setProperty name="mqtt-message">
+                <simple>{"name":"zipdata"}</simple>
+            </setProperty>
+            <wireTap uri="direct:mqtt-publish"/>
+
+            <removeHeaders pattern="*"/>
+
+            <setHeader name="CamelFileName">
+                <simple>${exchangeProperty.s3entry}</simple>
+            </setHeader>
+            <log message="s3 file: ${header.CamelFileName}"/>
+
+            <to uri="direct:zip-aggregator"/> -->
+        </split>
+
+        <setBody>
+            <simple>{"status":"done"}</simple>
+        </setBody>
+    </route>
+
+
+    <route id="process-S3-file">
+        <from uri="direct:process-S3-file"/>
+
             <setProperty name="s3entry">
                 <simple>${body.key}</simple>
             </setProperty>
@@ -551,11 +587,7 @@
             <log message="s3 file: ${header.CamelFileName}"/>
 
             <to uri="direct:zip-aggregator"/>
-        </split>
 
-        <setBody>
-            <simple>{"status":"done"}</simple>
-        </setBody>
     </route>
 
 
@@ -621,7 +653,7 @@
         </setHeader>
         <log message="sending zip from edge ID: ${header.edgeId}"/>
 
-        <to uri="{{camel.uri.central}}"/>
+        <to uri="{{camel.uri.feeder}}"/>
         <!-- <to uri="http://feeder-edge1.apps.cluster-958kv.sandbox1500.opentlc.com/zip"/> -->
 
       </aggregate>
