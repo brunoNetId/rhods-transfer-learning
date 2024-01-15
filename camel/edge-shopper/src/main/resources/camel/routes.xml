@@ -236,7 +236,7 @@
         </setHeader>
 
         <!-- <to uri="language:constant:resource:classpath:trainable.json"/> -->
-        <to uri="language:constant:resource:file:/deployments/config/training-options.json"/>
+        <to uri="{{camel.uri.config.training}}"/>
 
         <setBody>
 
@@ -613,6 +613,13 @@
                 <simple>{"name":"zipsend"}</simple>
             </setProperty>
             <wireTap uri="direct:mqtt-publish"/>
+
+
+        <!-- <log message="sending zip from edge ID: {{edge.id}}"/> -->
+        <setHeader name="edgeId">
+            <simple>{{edge.id}}</simple>
+        </setHeader>
+        <log message="sending zip from edge ID: ${header.edgeId}"/>
 
         <to uri="{{camel.uri.central}}"/>
         <!-- <to uri="http://feeder-edge1.apps.cluster-958kv.sandbox1500.opentlc.com/zip"/> -->
