@@ -45,13 +45,13 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
 
 1. Deploy an instance of Minio
    
-   1. Create a new project, for example `central`
+   1. Create a new project, named `central`
    3. Under the `central` project, deploy the following YAML resource:
       * **deployment/central/minio.yaml**
 
 1. Create necessary S3 buckets
    
-   1. Open the Minio UI (_UI Route_)
+   1. Open the Minio UI (2 routes: use _UI Route_)
    2. Login with `minio/minio123`
    3. Create buckets for RHODS:
       * **workbench**
@@ -59,7 +59,11 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
       * **edge1-data**
       * **edge1-models**
       * **edge1-ready**
-   3. Create buckets for Edge-2:
+
+      <br/>
+
+   3. [OPTIONAL] Create buckets for Edge-2: \
+      (Not needed for standard demo)
       * **edge2-data**
       * **edge2-models**
       * **edge2-ready**
@@ -127,8 +131,22 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
    > [!CAUTION] 
    > Do not use the *'Git Clone'* feature to upload the project, you don't need to upload the big dataset of images!
 
-   Under the *Jupyter* menu, click the icon *'Upload Files'* and select all the files under the repository path:
-      * **workbench/pipeline/**
+   Under the *Jupyter* menu, click the icon *'Upload Files'* and select the sources listed below:
+
+   To show the entire modelling process:
+      * **workbench/clean-01.ipynb**
+
+   To show the process segmented in pipeline steps:
+
+      * **workbench/pipeline/step-01.ipynb**
+      * **workbench/pipeline/step-02.ipynb**
+      * **workbench/pipeline/step-03.ipynb**
+
+   To show the *Elyra* pipeline definition:
+
+      * **workbench/pipeline/retrain.pipeline**
+
+   <br/>
 
 1. Export the pipeline in a *Tekton* YAML file.
    
