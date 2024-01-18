@@ -300,7 +300,7 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
        oc create route edge --service=minio-central --port=port9090
        ```
        Try opening (central) Minio's console using the newly created route `minio-central`. Make sure the buckets you see are the ones from `central`. \
-       You can delete the route after validation the service is healthy.
+       You can delete the route after validating the service is healthy.
      
 <br/>
 
