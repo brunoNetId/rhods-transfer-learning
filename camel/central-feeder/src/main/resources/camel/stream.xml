@@ -33,7 +33,7 @@
             <simple>${body}</simple>
             <bean ref="controller" method="jobPending"/>
             <to uri="file:unzipped"/>
-            <log message="unzipping item"/>
+            <!-- <log message="unzipping item"/> -->
         </split>
 
         <log message="done streaming"/>

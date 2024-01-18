@@ -49,19 +49,17 @@ oc project central
 
 ./mvnw clean package -DskipTests -Dquarkus.kubernetes.deploy=true
 
-Make sure you expose the service:
-
 Note:
- > This service is not exposed publicly.
+ > This service (feeder) is not exposed publicly.
  > Service Interconnect will make it consumable from Edge regions.
-
-(to test it out)
-oc expose service feeder
-
 
 
 Test the service
 ================
+
+If you want to test the service from your local machine, you'll need to create a Route:
+
+oc expose service feeder
 
 You should have already the following resources ready:
  

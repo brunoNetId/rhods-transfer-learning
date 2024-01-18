@@ -10,6 +10,9 @@ Prerequisites
 Camel needs to move AI models between S3 buckets.
 
 A central Minio instance needs to exist (where the pipeline drops new models).
+Also, the central minio needs to be accessible, either by:
+ - a Service Interconnect local service
+ - a Route
 
 Ensure a Minio instance is deployed on the Edge.
 You can create one following the steps below:

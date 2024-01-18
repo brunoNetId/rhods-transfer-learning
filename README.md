@@ -184,9 +184,9 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
      namespace: tf
    spec:
    
-     [Copy paste here contents of 'pipelineSpec']
+     [Copy paste here contents under 'pipelineSpec']
    ```
-   Complete the YAML code above with the `pipelineSpec` (around line 50) definition from your exported YAML file in Jupyter (`retrain.yaml`).
+   Complete the YAML code above with the `pipelineSpec` (around line 51) definition from your exported YAML file in Jupyter (`retrain.yaml`).
       > [!CAUTION] 
       > Make sure you un-tab one level the `pipelineSpec` definition to make the resource valid.
 
@@ -194,13 +194,16 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
 
    You can test the pipeline by clicking `Action > Start`, accept default values and click `Start`.
 
-   You should see the pipeline <u>**fail**</u> because there is no trainable data available just yet.
+   You should see the pipeline <u>**FAIL**</u> because there is no trainable data available just yet.
 
 1. Upload training data to S3.
 
    There are two options to upload training data:
-   * **Manually (recommended)**: Use Minio's UI console to upload the `images` folder under:
-     * dataset/images \
+   * **Manually (recommended)**: Use Minio's UI console to upload the images (training data):
+     * From the project's folder:
+       * dataset/images
+     * To the root of the S3 bucket:
+       * `edge1-data` \
        (wait for all images to be fully uploaded)
    * **Automatically**: Use the Camel server provided in the repository to push training data to S3. Follow the instructions under:
      * camel/central-feeder/Readme.txt
@@ -215,12 +218,32 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
 
 <br/>
 
-### Deliver the AI/ML model and run the ML server
+### Prepare the *Edge1* environment
 
-1. Prepare the Edge-1 environment
+1. Create a new *OpenShift* project `edge1`.
 
-   1. Create a new *OpenShift* project `edge1`.
-   2. Deploy a *Minio* instance in the `edge1` namespace using the following YAML resource:
+
+1. Deploy an *AMQ Broker*
+    
+    AMQ is used to enable MQTT connectivity with edge devices and manage monitoring events.
+
+    1. Install the AMQ Broker Operator:
+        * AMQ Broker for RHEL 8 (Multiarch)
+
+        Install in `edge1` namespace (specific) \
+        **NOT cluster wide**
+    1. Create a new ***ActiveMQ Artemis*** (amq broker instance) \
+    Use the YAML defined under:
+        * **deployment/edge/amq-broker.yaml**
+    
+    1. Create a route to enable external MQTT communication (demo Mobile App)
+        ```
+        oc create route edge broker-amq-mqtt --service broker-amq-mqtt-0-svc
+        ```
+
+1. Deploy a *Minio* instance on the (near) edge.
+
+   1. In the `edge1` namespace use the following YAML resource to create the *Minio* instance:
       * **deployment/edge/minio.yaml**
    1. In the new *Minio* instance create the following buckets:
       * **production** (live AI/ML models)
@@ -228,31 +251,68 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
       * **valid** (data from valid inferences)
       * **unclassified** (data from invalid inferences)
 
-    1. Deploy an *AMQ Broker*
-       
-       AMQ is used to enable MQTT connectivity with edge devices and manage monitoring events.
+1. Create a local service to access the `central` S3 storage with *Service Interconnect*.
 
-       1. Install the AMQ Broker Operator:
-          * AMQ Broker for RHEL 8 (Multiarch)
+   Follow the instructions below:
 
-          Install in `edge1` namespace (specific) \
-          **NOT cluster wide**
-       1. Create a new ***ActiveMQ Artemis*** (amq broker instance) \
-       Use the YAML defined under:
-          * **deployment/edge/amq-broker.yaml**
-        
-       1. Create a route to enable external MQTT communication
-            ```
-            oc create route edge broker-amq-mqtt --service broker-amq-mqtt-0-svc
-            ```
+   1. Install *Service Interconnect*'s  CLI \
+      (you can use an embedded terminal from the OCP's console)
+      ```
+      curl https://skupper.io/install.sh | sh
+      ```
+      ```
+      export PATH="/home/user/.local/bin:$PATH"
+      ```
+   1. Initialize *SI* in `central` and create a connection token:
+      ```
+      oc project central
+      ```
+      ```
+      skupper init --enable-console --enable-flow-collector --console-auth unsecured
+      ```
+      ```
+      skupper token create edge_to_central.token
+      ```
+
+
+    1. Initialize *SI* in `edge1` and create the connection using the token we created earlier:
+        ```
+        oc project edge1
+        ```
+        ```
+        skupper init
+        ```
+        ```
+        skupper link create edge_to_central.token --name edge-to-central
+        ```
+
+    1. Expose the S3 storage service (*Minio*) from `central` on *SI*'s network using annotations:
+        ```
+        oc project central
+        ```
+        ```
+        kubectl annotate service minio-service skupper.io/proxy=http skupper.io/address=minio-central
+        ```
+    1. Test the SI service. \
+       You can test the service from `edge1` with a Route:
+       ```
+       oc project edge1
+       oc create route edge --service=minio-central --port=port9090
+       ```
+       Try opening (central) Minio's console using the newly created route `minio-central`. Make sure the buckets you see are the ones from `central`. \
+       You can delete the route after validation the service is healthy.
+     
+<br/>
+
+### Deliver the AI/ML model and run the ML server
 
 1. Deploy the *Edge Manager*. \
    Deploy in the new `edge1` namespace. \
    Follow instructions under:
     * **camel/edge-manager/Readme.txt** 
     
-    The *Edge Manager* moves available models from the `edge1-ready` (central) to `production` (edge1).
-
+    The *Edge Manager* moves available models from the `edge1-ready` (central) to `production` (edge1). \
+    When the pod starts, you will see the model available in `production`.
 
 1. Deploy the TensorFlow server.
 
@@ -342,7 +402,13 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
 
     When successfully deployed, *Camel* should connect to *Kafka* and create a *Kafka* topic `trigger`. Check in your environment *Camel* started correctly, and the *Kafka* topic exists.
 
+    > [!CAUTION] 
+    > You might need to wait a bit until the `trigger` topic gets created, be patient.
+
+
+
 <br/>
+
 
 ### Deploy the data ingestion system
 
@@ -350,7 +416,7 @@ A *Camel* service deployed on *Central* will be ready listening for requests to 
 
 Upon receiving data ingestion requests, Camel will:
 * Unpack the data and push it to central S3 storage.
-* Send a signal via Kafka to kick off the process of training a new AI/ML model.
+* Send a signal via *Kafka* to kick off the process of training a new AI/ML model.
 
 <br/>
 
@@ -361,10 +427,19 @@ Upon receiving data ingestion requests, Camel will:
 
     Check in your environment *Camel* has started and is in healthy state.
 
-1. (for testing purposes) Expose its service by executing the command below:
+1. Expose the *Feeder* service to the *Service Interconnect* network to allow `edge1` to have visibility:
+    ```
+    oc project central
+    ```
+    ```
+    kubectl annotate service feeder skupper.io/proxy=http
+    ```
+
+
+1. (for testing purposes) Expose the `feeder` service (in `edge1`) by executing the command below:
 
    ```bash
-   oc expose service feeder
+   oc expose service feeder -n edge1
    ```
 
 <br/>
@@ -393,9 +468,10 @@ Procedure:
 1. Push training data
 
    From the `central-feeder` project, execute in your terminal the following `curl` command:
-
+    > [!CAUTION] 
+    > If the ZIP file is big, be patient.
    ```
-   ROUTE=$(oc get routes -o jsonpath={.items[?(@.metadata.name==\'feeder\')].spec.host}) && \
+   ROUTE=$(oc get routes -n edge1 -o jsonpath={.items[?(@.metadata.name==\'feeder\')].spec.host}) && \
    curl -v -T data.zip http://$ROUTE/zip?edgeId=edge1
    ```
 1. When the upload completes you should see a new pipeline execution has started.
@@ -444,7 +520,7 @@ Under the `edge1` namespace, perform the following actions:
    First, create a *ConfigMap* containing the catalogue: \
    (make sure you're working on the `edge1` namespace) 
    ```
-   oc create cm catalogue --from-file=catalogue.json
+   oc create cm catalogue --from-file=catalogue.json -n edge1
    ```
 
    Then, run the `kamel` cli command:

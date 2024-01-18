@@ -1,6 +1,6 @@
 ## Prerequisites
 
-This Camel Quarkus component integrates, MQTT and HTTP clients (such as IoT devices, handsets, 3rd party clients) with an AI/ML engine, to obtain detection results from images.
+This Camel Quarkus component integrates, MQTT and HTTP clients (such as IoT devices, handsets, 3rd party clients) with an AI/ML engine, to obtain detection results from images. It also acts as an ingestion system and pushes training data to the central data center.
 
 You'll need:
 
@@ -10,6 +10,7 @@ You'll need:
  - an AMQ Streams cluster
  - Camel K Operator
  - S3 storage
+ - Feeder (in central) system deployed.
  
 <br>
 
