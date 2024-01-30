@@ -17,6 +17,8 @@ spec:
     spec:
       containers:
       - image: tensorflow/serving:2.6.0
+        args:
+          - '--load_retry_interval_micros=5000000'
         imagePullPolicy: IfNotPresent
         livenessProbe:
           initialDelaySeconds: 30
