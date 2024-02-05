@@ -44,7 +44,7 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
 ### Create a RHODS project
 
 1. Deploy an instance of Minio
-   
+  
    1. Create a new project, named `central`
    3. Under the `central` project, deploy the following YAML resource:
       * **deployment/central/minio.yaml**
@@ -67,6 +67,40 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
       * **edge2-data**
       * **edge2-models**
       * **edge2-ready**
+
+   [NOTE] Achieve the same using minio API
+   
+	```
+	#https://thenewstack.io/how-to-create-an-object-storage-bucket-with-minio-object-storage/
+	sudo curl -o /usr/local/bin/mc https://dl.min.io/client/mc/release/linux-amd64/mc
+	sudo chmod +x /usr/local/bin/mc
+	mc --version
+
+	# Apply the following command in a separate terminal
+	oc port-forward $(oc get pod -l app=minio -o jsonpath="{.items[0].metadata.name}")  9000:9000
+	mc alias set myminio http://127.0.0.1:9000 minio minio123
+	mc ls myminio
+
+	mc mb myminio/workbench
+	mc mb myminio/edge1-data
+	mc mb myminio/edge1-models
+	mc mb myminio/edge1-ready
+
+	mc mb myminio/edge2-data
+	mc mb myminio/edge2-models
+	mc mb myminio/edge2-ready
+
+	mc ls myminio
+
+	[2024-02-05 12:57:34 GMT]0B edge1-data/
+	[2024-02-05 12:57:34 GMT]0B edge1-models/
+	[2024-02-05 12:57:34 GMT]0B edge1-ready/
+	[2024-02-05 12:57:47 GMT]0B edge2-data/
+	[2024-02-05 12:57:47 GMT]0B edge2-models/
+	[2024-02-05 12:57:48 GMT]0B edge2-ready/
+	[2024-02-05 12:56:59 GMT]0B workbench/
+	   
+	```  
 
 1. Create a new *Data Science Project*.
 
@@ -148,37 +182,6 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
 
    <br/>
    
-```
-#https://thenewstack.io/how-to-create-an-object-storage-bucket-with-minio-object-storage/
-sudo curl -o /usr/local/bin/mc https://dl.min.io/client/mc/release/linux-amd64/mc
-sudo chmod +x /usr/local/bin/mc
-mc --version
-
-# Apply the following command in a separate terminal
-oc port-forward $(oc get pod -l app=minio -o jsonpath="{.items[0].metadata.name}")  9000:9000
-mc alias set myminio http://127.0.0.1:9000 minio minio123
-mc ls myminio
-
-mc mb myminio/workbench
-mc mb myminio/edge1-data
-mc mb myminio/edge1-models
-mc mb myminio/edge1-ready
-
-mc mb myminio/edge2-data
-mc mb myminio/edge2-models
-mc mb myminio/edge2-ready
-
-mc ls myminio
-
-[2024-02-05 12:57:34 GMT]0B edge1-data/
-[2024-02-05 12:57:34 GMT]0B edge1-models/
-[2024-02-05 12:57:34 GMT]0B edge1-ready/
-[2024-02-05 12:57:47 GMT]0B edge2-data/
-[2024-02-05 12:57:47 GMT]0B edge2-models/
-[2024-02-05 12:57:48 GMT]0B edge2-ready/
-[2024-02-05 12:56:59 GMT]0B workbench/
-   
-```
 
 1. Export the pipeline in a *Tekton* YAML file.
    
