@@ -68,8 +68,9 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
       * **edge2-models**
       * **edge2-ready**
 
-   [NOTE] Achieve the same using minio API
-   
+---
+**NOTE**Achieve the same using minio API
+---
 	```
 	#https://thenewstack.io/how-to-create-an-object-storage-bucket-with-minio-object-storage/
 	sudo curl -o /usr/local/bin/mc https://dl.min.io/client/mc/release/linux-amd64/mc
