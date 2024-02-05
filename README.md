@@ -68,9 +68,7 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
       * **edge2-models**
       * **edge2-ready**
 
----
-**NOTE:** Achieve the same using minio API
----
+   **NOTE:** Achieve the same using minio API
 	```
 	#https://thenewstack.io/how-to-create-an-object-storage-bucket-with-minio-object-storage/
 	sudo curl -o /usr/local/bin/mc https://dl.min.io/client/mc/release/linux-amd64/mc
@@ -304,20 +302,12 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
 
 	mc ls prodminio
 
-	[2024-02-05 12:57:34 GMT]0B edge1-data/
-	[2024-02-05 12:57:34 GMT]0B edge1-models/
-	[2024-02-05 12:57:34 GMT]0B edge1-ready/
-	[2024-02-05 12:57:47 GMT]0B edge2-data/
-	[2024-02-05 12:57:47 GMT]0B edge2-models/
-	[2024-02-05 12:57:48 GMT]0B edge2-ready/
-	[2024-02-05 12:56:59 GMT]0B workbench/
-	   
-	```  
- (live AI/ML models)
- (training data)
- (data from valid inferences)
- (data from invalid inferences)
+	[2024-02-05 13:52:56 GMT]     0B data/
+	[2024-02-05 13:52:55 GMT]     0B production/
+	[2024-02-05 13:52:56 GMT]     0B unclassified/
+	[2024-02-05 13:52:56 GMT]     0B valid/
 
+	```  
 
 1. Create a local service to access the `central` S3 storage with *Service Interconnect*.
 
