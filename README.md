@@ -78,20 +78,20 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
 	mc --version
 
 	# Apply the following command in a separate terminal
-	oc port-forward $(oc get pod -l app=minio -o jsonpath="{.items[0].metadata.name}")  9000:9000
-	mc alias set myminio http://127.0.0.1:9000 minio minio123
-	mc ls myminio
+	oc port-forward $(oc get pod -l app=minio -o jsonpath="{.items[0].metadata.name}" -n central)  9000:9000
+	mc alias set trainminio http://127.0.0.1:9000 minio minio123
+	mc ls trainminio
 
-	mc mb myminio/workbench
-	mc mb myminio/edge1-data
-	mc mb myminio/edge1-models
-	mc mb myminio/edge1-ready
+	mc mb trainminio/workbench
+	mc mb trainminio/edge1-data
+	mc mb trainminio/edge1-models
+	mc mb trainminio/edge1-ready
 
-	mc mb myminio/edge2-data
-	mc mb myminio/edge2-models
-	mc mb myminio/edge2-ready
+	mc mb trainminio/edge2-data
+	mc mb trainminio/edge2-models
+	mc mb trainminio/edge2-ready
 
-	mc ls myminio
+	mc ls trainminio
 
 	[2024-02-05 12:57:34 GMT]0B edge1-data/
 	[2024-02-05 12:57:34 GMT]0B edge1-models/
@@ -286,6 +286,38 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
       * **data** (training data)
       * **valid** (data from valid inferences)
       * **unclassified** (data from invalid inferences)
+
+   
+   **NOTE:** Achieve the same using minio API
+	```
+	#https://thenewstack.io/how-to-create-an-object-storage-bucket-with-minio-object-storage/
+
+	# Apply the following command in a separate terminal
+	oc port-forward $(oc get pod -l app=minio -o jsonpath="{.items[0].metadata.name}" -n edge1)  9001:9000
+	mc alias set prodminio http://127.0.0.1:9001 minio minio123
+	mc ls prodminio
+
+	mc mb prodminio/production
+	mc mb prodminio/data
+	mc mb prodminio/valid
+	mc mb prodminio/unclassified
+
+	mc ls prodminio
+
+	[2024-02-05 12:57:34 GMT]0B edge1-data/
+	[2024-02-05 12:57:34 GMT]0B edge1-models/
+	[2024-02-05 12:57:34 GMT]0B edge1-ready/
+	[2024-02-05 12:57:47 GMT]0B edge2-data/
+	[2024-02-05 12:57:47 GMT]0B edge2-models/
+	[2024-02-05 12:57:48 GMT]0B edge2-ready/
+	[2024-02-05 12:56:59 GMT]0B workbench/
+	   
+	```  
+ (live AI/ML models)
+ (training data)
+ (data from valid inferences)
+ (data from invalid inferences)
+
 
 1. Create a local service to access the `central` S3 storage with *Service Interconnect*.
 
