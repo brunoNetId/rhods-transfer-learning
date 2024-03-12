@@ -35,39 +35,55 @@ The following list summarises the steps to deploy the demo:
 
 1. Provision the following RHDP item:
    * Base RHODS on AWS: \
-https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-workshop-rhods-base-aws.prod&utm_source=webapp&utm_medium=share-link
+   https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-workshop-rhods-base-aws.prod&utm_source=webapp&utm_medium=share-link
 
 2. Log in using your environment credentials.
 
 <br/>
+
+### Clone this repo
+
+```bash
+git clone https://github.com/hguerrero/rhods-transfer-learning.git
+```
 
 ### Create a RHODS project
 
 1. Deploy an instance of Minio
    
    1. Create a new project, named `central`
+      ```bash
+      oc new-project central
+      ```
    3. Under the `central` project, deploy the following YAML resource:
       * **deployment/central/minio.yaml**
+      ```bash
+      oc apply -f deployment/central/minio.yaml -n central
+      ```
 
 1. Create necessary S3 buckets
    
    1. Open the Minio UI (2 routes: use _UI Route_)
+   
+      ```bash
+      oc get route minio-ui -n central
+      ```
    2. Login with `minio/minio123`
    3. Create buckets for RHODS:
       * **workbench**
-   3. Create buckets for Edge-1:
+   4. Create buckets for Edge-1:
       * **edge1-data**
       * **edge1-models**
       * **edge1-ready**
-
+   
       <br/>
-
-   3. [OPTIONAL] Create buckets for Edge-2: \
+   
+   5. [OPTIONAL] Create buckets for Edge-2: \
       (Not needed for standard demo)
       * **edge2-data**
       * **edge2-models**
       * **edge2-ready**
-
+   
 1. Create a new *Data Science Project*.
 
    Open *Red Hat OpenShift AI* (also known as RHODS). \
@@ -99,6 +115,10 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
    The PVC will enable shared storage for the pipeline's execution. \
    Deploy the following YAML resource:
       * **deployment/pipeline/pvc.yaml**
+
+   ```bash
+   oc apply -f deployment/pipeline/pvc.yaml -n central
+   ```
 
 1. Create a new *Workbench*.
 
@@ -200,7 +220,7 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
 
    There are two options to upload training data:
    * **Manually (recommended)**: Use Minio's UI console to upload the images (training data):
-     * From the project's folder:
+     * Upload folder from the project's tree:
        * dataset/images
      * To the root of the S3 bucket:
        * `edge1-data` \
@@ -222,9 +242,13 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
 
 1. Create a new *OpenShift* project `edge1`.
 
+   ```bash
+   oc new-project edge1
+   ```
+
 
 1. Deploy an *AMQ Broker*
-    
+   
     AMQ is used to enable MQTT connectivity with edge devices and manage monitoring events.
 
     1. Install the AMQ Broker Operator:
@@ -232,20 +256,37 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
 
         Install in `edge1` namespace (specific) \
         **NOT cluster wide**
+        
     1. Create a new ***ActiveMQ Artemis*** (amq broker instance) \
-    Use the YAML defined under:
-        * **deployment/edge/amq-broker.yaml**
+        Use the YAML defined under:
+       * **deployment/edge/amq-broker.yaml**
     
-    1. Create a route to enable external MQTT communication (demo Mobile App)
-        ```
-        oc create route edge broker-amq-mqtt --service broker-amq-mqtt-0-svc
-        ```
+      ```bash
+      oc apply -f deployment/edge/amq-broker.yaml -n edge1
+      ```
 
+   1. Create a route to enable external MQTT communication (demo Mobile App)
+       ```
+       oc create route edge broker-amq-mqtt --service broker-amq-mqtt-0-svc -n central
+       ```
+   
 1. Deploy a *Minio* instance on the (near) edge.
 
    1. In the `edge1` namespace use the following YAML resource to create the *Minio* instance:
       * **deployment/edge/minio.yaml**
+
+      ```bash
+      oc apply -f deployment/edge/minio.yaml -n edge1
+      ```
+
+   1. Open the new _Minio_ instance console.
+
+      ```bash
+      oc get route minio-ui -n edge1
+      ```
+
    1. In the new *Minio* instance create the following buckets:
+
       * **production** (live AI/ML models)
       * **data** (training data)
       * **valid** (data from valid inferences)
@@ -257,68 +298,92 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
 
    1. Install *Service Interconnect*'s  CLI \
       (you can use an embedded terminal from the OCP's console)
-      ```
+      ```bash
       curl https://skupper.io/install.sh | sh
       ```
-      ```
-      export PATH="/home/user/.local/bin:$PATH"
+
+      ```bash
+      export PATH="$HOME/.local/bin:$PATH"
       ```
    1. Initialize *SI* in `central` and create a connection token:
-      ```
+      ```bash
       oc project central
       ```
-      ```
+
+      ```bash
       skupper init --enable-console --enable-flow-collector --console-auth unsecured
       ```
-      ```
+
+      ```bash
       skupper token create edge_to_central.token
       ```
 
-
     1. Initialize *SI* in `edge1` and create the connection using the token we created earlier:
-        ```
+        ```bash
         oc project edge1
         ```
-        ```
+        ```bash
         skupper init
         ```
-        ```
+        ```bash
         skupper link create edge_to_central.token --name edge-to-central
         ```
-
+   
     1. Expose the S3 storage service (*Minio*) from `central` on *SI*'s network using annotations:
-        ```
+        ```bash
         oc project central
         ```
-        ```
+        ```bash
         kubectl annotate service minio-service skupper.io/proxy=http skupper.io/address=minio-central
         ```
-    1. Test the SI service. \
+    1. Test the SI service.
        You can test the service from `edge1` with a Route:
+       
        ```
        oc project edge1
        oc create route edge --service=minio-central --port=port9090
        ```
-       Try opening (central) Minio's console using the newly created route `minio-central`. Make sure the buckets you see are the ones from `central`. \
+       Try opening (central) Minio's console using the newly created route `minio-central`. Make sure the buckets you see are the ones from `central`.
+       
+       ```bash
+       oc get route minio-central
+       ```
+       
        You can delete the route after validating the service is healthy.
-     
+
 <br/>
 
 ### Deliver the AI/ML model and run the ML server
 
-1. Deploy the *Edge Manager*. \
-   Deploy in the new `edge1` namespace. \
+1. Deploy the *Edge Manager*.
+   Deploy in the new `edge1` namespace.
    Follow instructions under:
+   
     * **camel/edge-manager/Readme.txt** 
-    
+   
+   1. Move to project `edge1`
+      ```bash
+      oc project edge1
+      ```
+   
+   2. Deploy app
+   
+      ```bash
+      ./mvnw clean package -DskipTests -Dquarkus.kubernetes.deploy=true
+      ```
+   
     The *Edge Manager* moves available models from the `edge1-ready` (central) to `production` (edge1). \
     When the pod starts, you will see the model available in `production`.
-
+   
 1. Deploy the TensorFlow server.
 
    Under the `edge1` project, deploy the following YAML resource:
       * **deployment/edge/tensorflow.yaml** 
 
+   ```bash
+   oc apply -f deployment/edge/tensorflow.yaml -n edge1
+   ```
+   
    The server will pick up the newly trained model from the `production` S3 bucket.
 
 
@@ -347,7 +412,7 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
 1. Create a Pipeline trigger.
 
    The next stage makes the pipeline triggerable. The goal is enable the platform to train new models automatically when new training data becomes available. 
-   
+
    Follow the steps below to create the trigger.
 
    To provision the YAML resources below, make sure you switch to the `tf` project where your pipeline was created.
@@ -355,11 +420,23 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
    1. Deploy the following YAML resource:
       * **deployment/pipeline/trigger-template.yaml**
 
+      ```bash
+      oc apply -f deployment/pipeline/trigger-template.yaml -n tf
+      ```
+      
    1. Deploy the following YAML resource:
       * **deployment/pipeline/trigger-binding.yaml**
 
+      ```bash
+      oc apply -f deployment/pipeline/trigger-binding.yaml -n tf
+      ```
+      
    1. Deploy the following YAML resource:
       * **deployment/pipeline/event-listener.yaml**
+      
+      ```bash
+      oc apply -f deployment/pipeline/event-listener.yaml -n tf
+      ```
 
 2. Trigger the pipeline
 
@@ -383,13 +460,17 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
    
    b. The pipeline also pushes the new model to the `edge1-ready` bucket. The *Edge Manager* moves the model to the *Edge Minio* instance, into the `production` bucket.  The Model server will detect the new version and hot reload it.
 
-1. Deploy a Kafka cluster
+3. Deploy a Kafka cluster
 
    The platform uses Kafka to produce/consume events to trigger the pipeline automatically.
 
    1. Install the *AMQ Streams* operator in the `central` namespace.
    1. Deploy a Kafka cluster in the `central` namespace using the following YAML resource:
       * **deployment/central/kafka.yaml**
+      
+      ```bash
+      oc apply -f deployment/central/kafka.yaml -n central
+      ```
       
       Wait for the cluster to fully deploy.
 
@@ -400,8 +481,20 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
     Follow instructions under:
     * **camel/central-delivery/Readme.txt**
 
-    When successfully deployed, *Camel* should connect to *Kafka* and create a *Kafka* topic `trigger`. Check in your environment *Camel* started correctly, and the *Kafka* topic exists.
+    1. Ensure your OpenShift client points to the 'central' namespace:
 
+         ```bash
+         oc project central
+         ```
+    
+    1. Execute the command below to deploy the system:
+    
+         ```bash
+         ./mvnw clean package -DskipTests -Dquarkus.kubernetes.deploy=true
+         ```
+    
+    When successfully deployed, *Camel* should connect to *Kafka* and create a *Kafka* topic `trigger`. Check in your environment *Camel* started correctly, and the *Kafka* topic exists.
+    
     > [!CAUTION] 
     > You might need to wait a bit until the `trigger` topic gets created, be patient.
 
@@ -425,13 +518,25 @@ Upon receiving data ingestion requests, Camel will:
     To deploy the system on *OpenShift*, follow instructions under:
     * **camel/central-feeder/Readme.txt**
 
+    1. Ensure your OpenShift client points to the 'central' namespace:
+
+       ```bash
+       oc project central
+       ```
+
+    1. Execute the command below to deploy the system:
+
+       ```bash
+       ./mvnw clean package -DskipTests -Dquarkus.kubernetes.deploy=true
+       ```
+
     Check in your environment *Camel* has started and is in healthy state.
 
 1. Expose the *Feeder* service to the *Service Interconnect* network to allow `edge1` to have visibility:
-    ```
+    ```bash
     oc project central
     ```
-    ```
+    ```bash
     kubectl annotate service feeder skupper.io/proxy=http
     ```
 
@@ -470,7 +575,7 @@ Procedure:
    From the `central-feeder` project, execute in your terminal the following `curl` command:
     > [!CAUTION] 
     > If the ZIP file is big, be patient.
-   ```
+   ```bash
    ROUTE=$(oc get routes -n edge1 -o jsonpath={.items[?(@.metadata.name==\'feeder\')].spec.host}) && \
    curl -v -T data.zip http://$ROUTE/zip?edgeId=edge1
    ```
@@ -481,8 +586,9 @@ Procedure:
 
 1. Test the new model
 
-   Send a new inference request against the ML Server. \
+   Send a new inference request against the ML Server.
    Under the project's `client` folder, execute the script:
+   
    ```
    ./infer.sh
    ```
@@ -492,8 +598,9 @@ Procedure:
 
 ### Deploy the AI-powered (intelligent) App
 
-The App connects edge devices to the platform and integrates with the various systems. \
+The App connects edge devices to the platform and integrates with the various systems.
 It includes an interface capable of:
+
 * Get price tags for products (inferencing)
 * Send training data (data ingesting)
 * Monitoring platform activity  
@@ -504,36 +611,51 @@ It includes an interface capable of:
 Some components are Camel K based.
 
 * Install Camel K Operator (cluster-wide)
-  * Red Hat Integration - Camel K \
+  * Red Hat Integration - Camel K
     1.10.5 provided by Red Hat
 
 #### Install systems
 
 Under the `edge1` namespace, perform the following actions:
 
-1. Deploy the Price Engine (Catalogue).
+1. Deploy the Price Engine (Catalog).
    
-   The price engine is based on Camel K. \
+   The price engine is based on Camel K.
    From the folder:
+   
     * **camel/edge-shopper/camel-price**
-
-   First, create a *ConfigMap* containing the catalogue: \
+   
+   First, create a *ConfigMap* containing the catalog:
    (make sure you're working on the `edge1` namespace) 
-   ```
+   
+   ```bash
    oc create cm catalogue --from-file=catalogue.json -n edge1
    ```
-
+   
    Then, run the `kamel` cli command:
-    ```
+    ```bash
     kamel run price-engine.xml \
     --resource configmap:catalogue@/deployments/config
     ```
-
-1. Deploy the *Edge Monitor*. \
-   Deploy it in the new `edge1` namespace. \
+   
+1. Deploy the *Edge Monitor*.
+   Deploy it in the new `edge1` namespace.
    Follow instructions under:
+   
     * **camel/edge-monitor/Readme.txt** 
-    
+   
+   1. Ensure your OpenShift client points to the 'central' namespace:
+   
+      ```bash
+      oc project edge1
+      ```
+   
+   1. Execute the command below to deploy the system:
+   
+      ```bash
+      ./mvnw clean package -DskipTests -Dquarkus.kubernetes.deploy=true
+      ```
+   
     The *Edge Monitor* bridges monitoring events from Kafka to MQTT.
 
 
@@ -541,11 +663,23 @@ Under the `edge1` namespace, perform the following actions:
    Deploy it in the new `edge1` namespace. \
    Follow instructions under:
     * **camel/edge-shopper/Readme.txt** 
-    
-    The *Edge Shopper* allows for inferencing/data-acquisition/monitoring from a web-based app the user can operate.
+   
+   1. Ensure your OpenShift client points to the 'central' namespace:
 
+      ```bash
+      oc project edge1
+      ```
+   
+   1. Execute the command below to deploy the system:
+   
+      ```bash
+      ./mvnw clean package -DskipTests -Dquarkus.kubernetes.deploy=true
+      ```
+   
+     The *Edge Shopper* allows for inferencing/data-acquisition/monitoring from a web-based app the user can operate.
+   
 1. Create a route to enable external connectivity:
-    ```
-    oc create route edge camel-edge --service shopper
+    ```bash
+    oc create route edge camel-edge --service shopper -n edge1
     ```
    Use the route URL to connect from a browser.
