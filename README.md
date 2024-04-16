@@ -2,8 +2,10 @@
 
 This project contains resources to showcase a full circle continuous motion of data to capture training data, train new ML models, deploy them, serve them, and expose the service for clients to send inference requests.
 
-   > [!CAUTION] 
-   > This project is still under construction. The instructions below are temporary and will change as the project evolves.
+   > [!WARNING]
+   > This project is now deprecated. \
+   > Please use instead the following repository, which is an improved version of this demo and includes deployment scripts and detailed documentation:
+   > * https://github.com/brunoNetId/sp-edge-to-cloud-data-pipelines-demo
 
 RHODS artifacts are not YAML editable, they require UI interaction. \
 Although tedious and time consuming, by the end of the deployment procedure (below), you will be able to understand how the full cycle connects all the stages together (acquisition, training, delivery, inferencing).
