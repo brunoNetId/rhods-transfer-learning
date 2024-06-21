@@ -46,7 +46,7 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
 ### Create a RHODS project
 
 1. Deploy an instance of Minio
-   
+  
    1. Create a new project, named `central`
    3. Under the `central` project, deploy the following YAML resource:
       * **deployment/central/minio.yaml**
@@ -69,6 +69,39 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
       * **edge2-data**
       * **edge2-models**
       * **edge2-ready**
+
+   **NOTE:** Achieve the same using minio API
+	```
+	#https://thenewstack.io/how-to-create-an-object-storage-bucket-with-minio-object-storage/
+	sudo curl -o /usr/local/bin/mc https://dl.min.io/client/mc/release/linux-amd64/mc
+	sudo chmod +x /usr/local/bin/mc
+	mc --version
+
+	# Apply the following command in a separate terminal
+	oc port-forward $(oc get pod -l app=minio -o jsonpath="{.items[0].metadata.name}" -n central)  9000:9000
+	mc alias set trainminio http://127.0.0.1:9000 minio minio123
+	mc ls trainminio
+
+	mc mb trainminio/workbench
+	mc mb trainminio/edge1-data
+	mc mb trainminio/edge1-models
+	mc mb trainminio/edge1-ready
+
+	mc mb trainminio/edge2-data
+	mc mb trainminio/edge2-models
+	mc mb trainminio/edge2-ready
+
+	mc ls trainminio
+
+	[2024-02-05 12:57:34 GMT]0B edge1-data/
+	[2024-02-05 12:57:34 GMT]0B edge1-models/
+	[2024-02-05 12:57:34 GMT]0B edge1-ready/
+	[2024-02-05 12:57:47 GMT]0B edge2-data/
+	[2024-02-05 12:57:47 GMT]0B edge2-models/
+	[2024-02-05 12:57:48 GMT]0B edge2-ready/
+	[2024-02-05 12:56:59 GMT]0B workbench/
+	   
+	```  
 
 1. Create a new *Data Science Project*.
 
@@ -149,6 +182,7 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
       * **workbench/pipeline/retrain.pipeline**
 
    <br/>
+   
 
 1. Export the pipeline in a *Tekton* YAML file.
    
@@ -252,6 +286,30 @@ https://demo.redhat.com/catalog?item=babylon-catalog-prod/sandboxes-gpte.ocp4-wo
       * **data** (training data)
       * **valid** (data from valid inferences)
       * **unclassified** (data from invalid inferences)
+
+   
+   **NOTE:** Achieve the same using minio API
+	```
+	#https://thenewstack.io/how-to-create-an-object-storage-bucket-with-minio-object-storage/
+
+	# Apply the following command in a separate terminal
+	oc port-forward $(oc get pod -l app=minio -o jsonpath="{.items[0].metadata.name}" -n edge1)  9001:9000
+	mc alias set prodminio http://127.0.0.1:9001 minio minio123
+	mc ls prodminio
+
+	mc mb prodminio/production
+	mc mb prodminio/data
+	mc mb prodminio/valid
+	mc mb prodminio/unclassified
+
+	mc ls prodminio
+
+	[2024-02-05 13:52:56 GMT]     0B data/
+	[2024-02-05 13:52:55 GMT]     0B production/
+	[2024-02-05 13:52:56 GMT]     0B unclassified/
+	[2024-02-05 13:52:56 GMT]     0B valid/
+
+	```  
 
 1. Create a local service to access the `central` S3 storage with *Service Interconnect*.
 
